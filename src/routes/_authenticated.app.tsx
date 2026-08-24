@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Upload, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { UploadEpisodeDialog } from "@/components/UploadEpisodeDialog";
+import { EpisodeList } from "@/components/EpisodeList";
+
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
