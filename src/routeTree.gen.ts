@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedEpisodesIdRouteImport } from './routes/_authenticated.episodes.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -46,6 +47,11 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedEpisodesIdRoute = AuthenticatedEpisodesIdRouteImport.update({
   id: '/episodes/$id',
   path: '/episodes/$id',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/app': typeof AuthenticatedAppRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/episodes/$id': typeof AuthenticatedEpisodesIdRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/app': typeof AuthenticatedAppRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/episodes/$id': typeof AuthenticatedEpisodesIdRoute
 }
 export interface FileRoutesById {
@@ -76,13 +84,28 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/episodes/$id': typeof AuthenticatedEpisodesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/pricing' | '/privacy' | '/app' | '/episodes/$id'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/pricing'
+    | '/privacy'
+    | '/app'
+    | '/settings'
+    | '/episodes/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/pricing' | '/privacy' | '/app' | '/episodes/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/pricing'
+    | '/privacy'
+    | '/app'
+    | '/settings'
+    | '/episodes/$id'
   id:
     | '__root__'
     | '/'
@@ -91,6 +114,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/_authenticated/app'
+    | '/_authenticated/settings'
     | '/_authenticated/episodes/$id'
   fileRoutesById: FileRoutesById
 }
@@ -146,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/episodes/$id': {
       id: '/_authenticated/episodes/$id'
       path: '/episodes/$id'
@@ -158,11 +189,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedEpisodesIdRoute: typeof AuthenticatedEpisodesIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedEpisodesIdRoute: AuthenticatedEpisodesIdRoute,
 }
 

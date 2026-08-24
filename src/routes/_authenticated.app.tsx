@@ -49,7 +49,12 @@ function Dashboard() {
             ارفع حلقة لتبدأ التفريغ والترجمة.
           </p>
         </div>
-        <UploadEpisodeDialog minutesLeft={Math.max(0, quota - used)} />
+        <div className="flex items-center gap-3">
+          <Link to="/settings" className="text-sm text-muted-foreground hover:text-foreground">
+            الإعدادات
+          </Link>
+          <UploadEpisodeDialog minutesLeft={Math.max(0, quota - used)} />
+        </div>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
