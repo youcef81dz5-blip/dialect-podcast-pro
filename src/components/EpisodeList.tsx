@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AudioLines, Loader2, Trash2, Upload } from "lucide-react";
+import { AudioLines, FileText, Loader2, Sparkles, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { transcribeEpisode } from "@/lib/transcription.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -61,6 +64,20 @@ export function EpisodeList() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const runTranscription = useServerFn(transcribeEpisode);
+  const transcribe = useMutation({
+    mutationFn: async (episodeId: string) => runTranscription({ data: { episodeId } }),
+    onMutate: () => toast.info("بدأ التفريغ، قد يستغرق دقائق."),
+    onSuccess: () => {
+      toast.success("اكتمل التفريغ.");
+      void queryClient.invalidateQueries({ queryKey: ["episodes"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+      void queryClient.invalidateQueries({ queryKey: ["episodes"] });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center rounded-2xl border p-12 text-sm text-muted-foreground">
@@ -104,6 +121,31 @@ export function EpisodeList() {
               )}
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>
+            {episode.status === "ready" ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link to="/episodes/$id" params={{ id: episode.id }}>
+                  <FileText className="size-4" />
+                  النص
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={
+                  episode.status === "processing" ||
+                  (transcribe.isPending && transcribe.variables === episode.id)
+                }
+                onClick={() => transcribe.mutate(episode.id)}
+              >
+                {transcribe.isPending && transcribe.variables === episode.id ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                تفريغ
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
