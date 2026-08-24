@@ -49,10 +49,7 @@ function Dashboard() {
             ارفع حلقة لتبدأ التفريغ والترجمة.
           </p>
         </div>
-        <Button disabled>
-          <Upload className="size-4" />
-          رفع حلقة (قريباً)
-        </Button>
+        <UploadEpisodeDialog minutesLeft={Math.max(0, quota - used)} />
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -71,14 +68,11 @@ function Dashboard() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-card/40 p-12 text-center md:col-span-2">
-          <Upload className="size-8 text-muted-foreground" />
-          <h2 className="mt-4 text-lg font-semibold">لا توجد حلقات بعد</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            في المرحلة القادمة ستتمكن من رفع ملف صوتي أو لصق رابط حلقة ليبدأ التفريغ تلقائياً.
-          </p>
+        <div className="md:col-span-2">
+          <EpisodeList />
         </div>
       </div>
+
     </main>
   );
 }
