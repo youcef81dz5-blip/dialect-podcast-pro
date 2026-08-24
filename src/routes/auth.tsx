@@ -39,7 +39,10 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     void navigate({ to: "/app" });
   }
 
@@ -55,7 +58,10 @@ function AuthPage() {
       },
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("تم إنشاء الحساب. تحقق من بريدك إن طُلب التأكيد.");
     void navigate({ to: "/app" });
   }
@@ -67,7 +73,8 @@ function AuthPage() {
     });
     if (result.error) {
       setBusy(false);
-      return toast.error("تعذّر تسجيل الدخول عبر Google");
+      toast.error("تعذّر تسجيل الدخول عبر Google");
+      return;
     }
     if (result.redirected) return;
     setBusy(false);
