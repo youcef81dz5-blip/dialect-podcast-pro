@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      episodes: {
+        Row: {
+          created_at: string
+          dialect: Database["public"]["Enums"]["episode_dialect"]
+          duration_seconds: number | null
+          error_message: string | null
+          id: string
+          source_type: Database["public"]["Enums"]["episode_source"]
+          source_url: string | null
+          status: Database["public"]["Enums"]["episode_status"]
+          storage_path: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dialect?: Database["public"]["Enums"]["episode_dialect"]
+          duration_seconds?: number | null
+          error_message?: string | null
+          id?: string
+          source_type: Database["public"]["Enums"]["episode_source"]
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["episode_status"]
+          storage_path?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dialect?: Database["public"]["Enums"]["episode_dialect"]
+          duration_seconds?: number | null
+          error_message?: string | null
+          id?: string
+          source_type?: Database["public"]["Enums"]["episode_source"]
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["episode_status"]
+          storage_path?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          episode_id: string
+          id: string
+          kind: Database["public"]["Enums"]["job_kind"]
+          last_error: string | null
+          locked_at: string | null
+          state: Database["public"]["Enums"]["job_state"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          episode_id: string
+          id?: string
+          kind: Database["public"]["Enums"]["job_kind"]
+          last_error?: string | null
+          locked_at?: string | null
+          state?: Database["public"]["Enums"]["job_state"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          episode_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["job_kind"]
+          last_error?: string | null
+          locked_at?: string | null
+          state?: Database["public"]["Enums"]["job_state"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -91,6 +180,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      episode_dialect: "msa" | "gulf" | "egyptian" | "levantine" | "maghrebi"
+      episode_source: "upload" | "url"
+      episode_status: "queued" | "processing" | "ready" | "failed"
+      job_kind: "transcribe" | "translate"
+      job_state: "pending" | "running" | "done" | "failed"
       subscription_plan: "free" | "pro"
     }
     CompositeTypes: {
@@ -219,6 +313,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      episode_dialect: ["msa", "gulf", "egyptian", "levantine", "maghrebi"],
+      episode_source: ["upload", "url"],
+      episode_status: ["queued", "processing", "ready", "failed"],
+      job_kind: ["transcribe", "translate"],
+      job_state: ["pending", "running", "done", "failed"],
       subscription_plan: ["free", "pro"],
     },
   },
