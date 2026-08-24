@@ -125,6 +125,28 @@ export function EpisodeList() {
               )}
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>
+            {episode.status === "ready" ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link to="/episodes/$id" params={{ id: episode.id }}>
+                  <FileText className="size-4" />
+                  النص
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={transcribe.isPending || episode.status === "processing"}
+                onClick={() => transcribe.mutate(episode.id)}
+              >
+                {transcribe.isPending || episode.status === "processing" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Play className="size-4" />
+                )}
+                {episode.status === "failed" ? "إعادة المحاولة" : "تفريغ"}
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -136,6 +158,7 @@ export function EpisodeList() {
             >
               <Trash2 className="size-4" />
             </Button>
+
           </li>
         );
       })}
