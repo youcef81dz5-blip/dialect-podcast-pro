@@ -1,10 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AudioLines, Loader2, Trash2, Upload } from "lucide-react";
+import { AudioLines, FileText, Loader2, Play, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { transcribeEpisode } from "@/lib/transcription.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
 
 const STATUS_LABEL: Record<string, { label: string; variant: "secondary" | "default" | "destructive" | "outline" }> = {
   queued: { label: "في الانتظار", variant: "secondary" },
