@@ -92,7 +92,11 @@ function Landing() {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        صدى — أداة تفريغ وترجمة البودكاست العربي
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <span>صدى — أداة تفريغ وترجمة البودكاست العربي</span>
+          <Link to="/pricing" className="hover:text-foreground">الأسعار</Link>
+          <Link to="/privacy" className="hover:text-foreground">سياسة الخصوصية</Link>
+        </div>
       </footer>
     </div>
   );
