@@ -1,14 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AudioLines, FileText, Loader2, Play, Trash2, Upload } from "lucide-react";
+import { AudioLines, Loader2, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { transcribeEpisode } from "@/lib/transcription.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
 
 const STATUS_LABEL: Record<string, { label: string; variant: "secondary" | "default" | "destructive" | "outline" }> = {
   queued: { label: "في الانتظار", variant: "secondary" },
@@ -65,23 +61,6 @@ export function EpisodeList() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const runTranscription = useServerFn(transcribeEpisode);
-  const transcribe = useMutation({
-    mutationFn: async (episodeId: string) => runTranscription({ data: { episodeId } }),
-    onMutate: () => {
-      toast.info("بدأ التفريغ، قد يستغرق بضع دقائق.");
-    },
-    onSuccess: () => {
-      toast.success("اكتمل تفريغ الحلقة.");
-      void queryClient.invalidateQueries({ queryKey: ["episodes"] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-      void queryClient.invalidateQueries({ queryKey: ["episodes"] });
-    },
-  });
-
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center rounded-2xl border p-12 text-sm text-muted-foreground">
@@ -125,28 +104,6 @@ export function EpisodeList() {
               )}
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>
-            {episode.status === "ready" ? (
-              <Button asChild variant="secondary" size="sm">
-                <Link to="/episodes/$id" params={{ id: episode.id }}>
-                  <FileText className="size-4" />
-                  النص
-                </Link>
-              </Button>
-            ) : (
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={transcribe.isPending || episode.status === "processing"}
-                onClick={() => transcribe.mutate(episode.id)}
-              >
-                {transcribe.isPending || episode.status === "processing" ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Play className="size-4" />
-                )}
-                {episode.status === "failed" ? "إعادة المحاولة" : "تفريغ"}
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="icon"
@@ -158,7 +115,6 @@ export function EpisodeList() {
             >
               <Trash2 className="size-4" />
             </Button>
-
           </li>
         );
       })}
