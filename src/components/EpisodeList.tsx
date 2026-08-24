@@ -121,6 +121,31 @@ export function EpisodeList() {
               )}
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>
+            {episode.status === "ready" ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link to="/episodes/$id" params={{ id: episode.id }}>
+                  <FileText className="size-4" />
+                  النص
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={
+                  episode.status === "processing" ||
+                  (transcribe.isPending && transcribe.variables === episode.id)
+                }
+                onClick={() => transcribe.mutate(episode.id)}
+              >
+                {transcribe.isPending && transcribe.variables === episode.id ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                تفريغ
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
