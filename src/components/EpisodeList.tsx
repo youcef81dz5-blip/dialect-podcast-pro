@@ -65,6 +65,23 @@ export function EpisodeList() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const runTranscription = useServerFn(transcribeEpisode);
+  const transcribe = useMutation({
+    mutationFn: async (episodeId: string) => runTranscription({ data: { episodeId } }),
+    onMutate: () => {
+      toast.info("بدأ التفريغ، قد يستغرق بضع دقائق.");
+    },
+    onSuccess: () => {
+      toast.success("اكتمل تفريغ الحلقة.");
+      void queryClient.invalidateQueries({ queryKey: ["episodes"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+      void queryClient.invalidateQueries({ queryKey: ["episodes"] });
+    },
+  });
+
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center rounded-2xl border p-12 text-sm text-muted-foreground">
