@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +66,16 @@ function Dashboard() {
           <p className="mt-3 text-xs text-muted-foreground">
             الخطة الحالية: {subscription?.plan === "pro" ? "احترافي" : "مجاني"}
           </p>
+          {quota - used <= 0 && (
+            <p className="mt-2 text-xs text-destructive">
+              انتهى رصيدك.{" "}
+              <Link to="/pricing" className="underline">
+                رقِّ خطتك
+              </Link>{" "}
+              للمتابعة.
+            </p>
+          )}
+
         </div>
 
         <div className="md:col-span-2">
