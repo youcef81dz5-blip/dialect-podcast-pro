@@ -61,10 +61,43 @@ export const transcribeEpisode = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // تجديد الحصة الشهرية عند انتهاء الفترة الحالية
+    let { data: sub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id, minutes_quota, minutes_used, current_period_end")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (sub && new Date(sub.current_period_end).getTime() < Date.now()) {
+      const start = new Date();
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+      const { data: renewed } = await supabaseAdmin
+        .from("subscriptions")
+        .update({
+          minutes_used: 0,
+          current_period_start: start.toISOString(),
+          current_period_end: end.toISOString(),
+        })
+        .eq("id", sub.id)
+        .select("id, minutes_quota, minutes_used, current_period_end")
+        .single();
+      if (renewed) sub = renewed;
+    }
+
+    const minutesLeft = sub ? sub.minutes_quota - Number(sub.minutes_used ?? 0) : 0;
+    if (minutesLeft <= 0) {
+      throw new Error("انتهى رصيد الدقائق في خطتك الحالية. رقِّ خطتك للمتابعة.");
+    }
+    if (episode.duration_seconds && episode.duration_seconds / 60 > minutesLeft) {
+      throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
+    }
+
     await supabaseAdmin
       .from("episodes")
       .update({ status: "processing", error_message: null })
       .eq("id", episode.id);
+
 
     try {
       let bytes: Uint8Array;
