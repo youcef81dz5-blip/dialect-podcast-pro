@@ -254,6 +254,85 @@ export type Database = {
           },
         ]
       }
+      translation_segments: {
+        Row: {
+          created_at: string
+          end_ms: number
+          id: string
+          idx: number
+          start_ms: number
+          text: string
+          translation_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_ms: number
+          id?: string
+          idx: number
+          start_ms: number
+          text: string
+          translation_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_ms?: number
+          id?: string
+          idx?: number
+          start_ms?: number
+          text?: string
+          translation_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translation_segments_translation_id_fkey"
+            columns: ["translation_id"]
+            isOneToOne: false
+            referencedRelation: "translations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      translations: {
+        Row: {
+          created_at: string
+          id: string
+          model: string | null
+          status: string
+          target_language: string
+          transcript_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model?: string | null
+          status?: string
+          target_language?: string
+          transcript_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model?: string | null
+          status?: string
+          target_language?: string
+          transcript_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translations_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "transcripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
