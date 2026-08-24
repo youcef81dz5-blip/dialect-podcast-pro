@@ -50,9 +50,15 @@ function Landing() {
           <AudioLines className="size-6 text-primary" />
           <span className="text-lg font-bold">صدى</span>
         </div>
-        <Button asChild variant={user ? "default" : "outline"} size="sm" disabled={loading}>
-          <Link to={user ? "/app" : "/auth"}>{user ? "لوحة التحكم" : "تسجيل الدخول"}</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/pricing">الأسعار</Link>
+          </Button>
+          <Button asChild variant={user ? "default" : "outline"} size="sm" disabled={loading}>
+            <Link to={user ? "/app" : "/auth"}>{user ? "لوحة التحكم" : "تسجيل الدخول"}</Link>
+          </Button>
+        </div>
+
       </header>
 
       <main>
