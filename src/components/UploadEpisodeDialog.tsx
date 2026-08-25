@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Upload, Link2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveMediaUrl } from "@/lib/media-resolve.functions";
 import { useAuth } from "@/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +59,8 @@ function readDuration(file: File): Promise<number | null> {
 export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const resolveMedia = useServerFn(resolveMediaUrl);
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [dialect, setDialect] = useState<Dialect>("msa");
@@ -79,7 +84,9 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
       let storagePath: string | null = null;
       let sourceUrl: string | null = null;
       let duration: number | null = null;
+      let resolvedTitle: string | null = null;
       const finalTitle = title.trim();
+
 
       if (tab === "upload") {
         if (!file) throw new Error("اختر ملفاً صوتياً أولاً.");
@@ -99,14 +106,21 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         if (!/^https:\/\/\S+$/i.test(trimmed)) {
           throw new Error("أدخل رابطاً صالحاً يبدأ بـ https://");
         }
-        sourceUrl = trimmed;
+        const resolved = await resolveMedia({ data: { url: trimmed } });
+        sourceUrl = resolved.audioUrl;
+        duration = resolved.durationSeconds;
+        if (!title.trim() && resolved.title) resolvedTitle = resolved.title;
+        if (duration && duration / 60 > minutesLeft) {
+          throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
+        }
       }
+
 
       const { data: episode, error } = await supabase
         .from("episodes")
         .insert({
           user_id: user.id,
-          title: finalTitle || (file?.name ?? "حلقة بدون عنوان"),
+          title: finalTitle || resolvedTitle || (file?.name ?? "حلقة بدون عنوان"),
           source_type: tab,
           source_url: sourceUrl,
           storage_path: storagePath,
@@ -146,8 +160,10 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         <DialogHeader className="text-right">
           <DialogTitle>حلقة جديدة</DialogTitle>
           <DialogDescription>
-            ارفع ملفاً صوتياً حتى 200 ميجابايت أو الصق رابطاً مباشراً للحلقة.
+            ارفع ملفاً صوتياً حتى 200 ميجابايت، أو الصق رابط يوتيوب / Apple Podcasts / خلاصة RSS
+            / رابط صوتي مباشر ونستخرج الصوت تلقائياً.
           </DialogDescription>
+
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as "upload" | "url")}>
@@ -172,16 +188,20 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
             />
           </TabsContent>
           <TabsContent value="url" className="pt-4">
-            <Label htmlFor="audio-url">رابط الحلقة</Label>
+            <Label htmlFor="audio-url">رابط الحلقة أو الفيديو</Label>
             <Input
               id="audio-url"
               dir="ltr"
-              placeholder="https://example.com/episode.mp3"
+              placeholder="https://youtube.com/watch?v=… أو رابط RSS/MP3"
               className="mt-2"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
+            <p className="mt-2 text-xs text-muted-foreground">
+              مدعوم: يوتيوب، Apple Podcasts، خلاصات RSS، وروابط MP3/M4A/WAV المباشرة.
+            </p>
           </TabsContent>
+
         </Tabs>
 
         <div className="grid gap-4 sm:grid-cols-2">
