@@ -63,7 +63,10 @@ function EpisodeTranscript() {
         .maybeSingle();
       if (transcriptError) throw transcriptError;
 
-      if (!transcript) return { episode, segments: [], translations: {} as Record<number, { id: string; text: string }> };
+      const emptyMap = () => ({}) as Record<number, { id: string; text: string }>;
+      if (!transcript) {
+        return { episode, segments: [], translations: emptyMap(), msa: emptyMap() };
+      }
 
       const { data: segments, error: segmentsError } = await supabase
         .from("transcript_segments")
@@ -72,24 +75,30 @@ function EpisodeTranscript() {
         .order("idx", { ascending: true });
       if (segmentsError) throw segmentsError;
 
-      const { data: translation } = await supabase
+      const { data: versions } = await supabase
         .from("translations")
-        .select("id")
+        .select("id, target_language")
         .eq("transcript_id", transcript.id)
-        .eq("target_language", "en")
-        .maybeSingle();
+        .in("target_language", ["en", "ar-msa"]);
 
-      const translations: Record<number, { id: string; text: string }> = {};
-      if (translation) {
+      const loadRows = async (translationId: string) => {
+        const map = emptyMap();
         const { data: rows } = await supabase
           .from("translation_segments")
           .select("id, idx, text")
-          .eq("translation_id", translation.id)
+          .eq("translation_id", translationId)
           .order("idx", { ascending: true });
-        for (const row of rows ?? []) translations[row.idx] = { id: row.id, text: row.text };
-      }
+        for (const row of rows ?? []) map[row.idx] = { id: row.id, text: row.text };
+        return map;
+      };
 
-      return { episode, segments: segments ?? [], translations };
+      const enVersion = versions?.find((v) => v.target_language === "en");
+      const msaVersion = versions?.find((v) => v.target_language === "ar-msa");
+
+      const translations = enVersion ? await loadRows(enVersion.id) : emptyMap();
+      const msa = msaVersion ? await loadRows(msaVersion.id) : emptyMap();
+
+      return { episode, segments: segments ?? [], translations, msa };
     },
   });
 
