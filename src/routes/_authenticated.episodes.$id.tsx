@@ -240,6 +240,16 @@ function EpisodeTranscript() {
                 <DropdownMenuItem onSelect={() => exportFile("srt", "ar")}>SRT عربي</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => exportFile("vtt", "ar")}>VTT عربي</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => exportFile("txt", "ar")}>TXT عربي</DropdownMenuItem>
+                {hasMsa && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>الفصحى</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => exportFile("srt", "msa")}>SRT فصحى</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("vtt", "msa")}>VTT فصحى</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("txt", "msa")}>TXT فصحى</DropdownMenuItem>
+                  </>
+                )}
+
                 {hasTranslation && (
                   <>
                     <DropdownMenuSeparator />
