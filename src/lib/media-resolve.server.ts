@@ -1,0 +1,159 @@
+export type ResolvedMedia = {
+  audioUrl: string;
+  title: string | null;
+  durationSeconds: number | null;
+  provider: "direct" | "rss" | "apple" | "youtube";
+};
+
+const AUDIO_EXT = /\.(mp3|m4a|mp4|wav|aac|ogg|opus|flac|webm)(\?|#|$)/i;
+
+function decodeEntities(value: string): string {
+  return value
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .trim();
+}
+
+function stripCdata(value: string): string {
+  return decodeEntities(value.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, ""));
+}
+
+export function youtubeVideoId(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") return url.pathname.slice(1).split("/")[0] || null;
+    if (!/(^|\.)youtube\.com$/.test(host) && host !== "youtube-nocookie.com") return null;
+    const v = url.searchParams.get("v");
+    if (v) return v;
+    const m = url.pathname.match(/\/(shorts|embed|live|v)\/([\w-]{6,})/);
+    return m?.[2] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function parseDurationToSeconds(value: string | null): number | null {
+  if (!value) return null;
+  if (/^\d+$/.test(value.trim())) return Number(value.trim());
+  const parts = value.split(":").map((p) => Number(p));
+  if (parts.some((p) => Number.isNaN(p))) return null;
+  return parts.reduce((acc, p) => acc * 60 + p, 0);
+}
+
+/** يستخرج أول حلقة صوتية من خلاصة RSS */
+function parseRssFeed(xml: string): ResolvedMedia | null {
+  const itemMatch = xml.match(/<item[\s>][\s\S]*?<\/item>/i);
+  const scope = itemMatch?.[0] ?? xml;
+  const enclosure = scope.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*>/i);
+  const mediaContent = scope.match(/<media:content[^>]*url=["']([^"']+)["'][^>]*>/i);
+  const audioUrl = enclosure?.[1] ?? mediaContent?.[1];
+  if (!audioUrl) return null;
+  const title = scope.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const duration = scope.match(/<itunes:duration[^>]*>([\s\S]*?)<\/itunes:duration>/i)?.[1];
+  return {
+    audioUrl: decodeEntities(audioUrl),
+    title: title ? stripCdata(title) : null,
+    durationSeconds: parseDurationToSeconds(duration ? stripCdata(duration) : null),
+    provider: "rss",
+  };
+}
+
+async function resolveAppleUrl(rawUrl: string): Promise<ResolvedMedia> {
+  const id = rawUrl.match(/id(\d+)/)?.[1];
+  if (!id) throw new Error("تعذّر التعرف على البودكاست في رابط Apple Podcasts.");
+  const res = await fetch(`https://itunes.apple.com/lookup?id=${id}&entity=podcast`);
+  if (!res.ok) throw new Error("تعذّر الوصول إلى Apple Podcasts.");
+  const json = (await res.json()) as { results?: Array<{ feedUrl?: string }> };
+  const feedUrl = json.results?.[0]?.feedUrl;
+  if (!feedUrl) throw new Error("لا توجد خلاصة RSS لهذا البودكاست.");
+  const resolved = await resolveFeedUrl(feedUrl);
+  return { ...resolved, provider: "apple" };
+}
+
+async function resolveFeedUrl(feedUrl: string): Promise<ResolvedMedia> {
+  const res = await fetch(feedUrl, { headers: { "User-Agent": "SadaBot/1.0" } });
+  if (!res.ok) throw new Error("تعذّر تحميل خلاصة RSS.");
+  const xml = await res.text();
+  const parsed = parseRssFeed(xml);
+  if (!parsed) throw new Error("لم يُعثر على ملف صوتي داخل الخلاصة.");
+  return parsed;
+}
+
+async function resolveYoutube(videoId: string): Promise<ResolvedMedia> {
+  const key = process.env['RAPIDAPI_KEY'];
+  if (!key) {
+    throw new Error(
+      "استخراج صوت يوتيوب يحتاج إلى تفعيل مزوّد خارجي (مفتاح RapidAPI). أضف المفتاح أو استخدم رابطاً صوتياً مباشراً/خلاصة RSS.",
+    );
+  }
+  const res = await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${videoId}`, {
+    headers: { "x-rapidapi-key": key, "x-rapidapi-host": "youtube-mp36.p.rapidapi.com" },
+  });
+  if (!res.ok) throw new Error("تعذّر استخراج الصوت من يوتيوب حالياً.");
+  const json = (await res.json()) as {
+    link?: string;
+    title?: string;
+    duration?: number;
+    status?: string;
+    msg?: string;
+  };
+  if (!json.link) {
+    throw new Error(
+      json.status === "processing"
+        ? "يوتيوب يجهّز الصوت الآن، أعد المحاولة بعد لحظات."
+        : json.msg || "تعذّر استخراج الصوت من يوتيوب.",
+    );
+  }
+  return {
+    audioUrl: json.link,
+    title: json.title ?? null,
+    durationSeconds: json.duration ?? null,
+    provider: "youtube",
+  };
+}
+
+export async function resolveMedia(rawUrl: string): Promise<ResolvedMedia> {
+  const trimmed = rawUrl.trim();
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    throw new Error("الرابط غير صالح.");
+  }
+  if (url.protocol !== "https:") throw new Error("يجب أن يبدأ الرابط بـ https://");
+
+  const host = url.hostname.replace(/^www\./, "");
+
+  const ytId = youtubeVideoId(trimmed);
+  if (ytId) return resolveYoutube(ytId);
+
+  if (host.endsWith("apple.com")) return resolveAppleUrl(trimmed);
+
+  if (AUDIO_EXT.test(url.pathname)) {
+    return { audioUrl: trimmed, title: null, durationSeconds: null, provider: "direct" };
+  }
+
+  // فحص نوع المحتوى: صوت مباشر أم خلاصة RSS
+  try {
+    const head = await fetch(trimmed, { method: "HEAD", redirect: "follow" });
+    const type = head.headers.get("content-type") ?? "";
+    if (type.startsWith("audio/") || type === "application/octet-stream") {
+      return { audioUrl: trimmed, title: null, durationSeconds: null, provider: "direct" };
+    }
+    if (/xml|rss/i.test(type)) return resolveFeedUrl(trimmed);
+  } catch {
+    // نتابع إلى محاولة قراءة الخلاصة
+  }
+
+  try {
+    return await resolveFeedUrl(trimmed);
+  } catch {
+    throw new Error(
+      "تعذّر التعرف على مصدر الصوت. استخدم رابطاً صوتياً مباشراً، أو خلاصة RSS، أو رابط Apple Podcasts، أو رابط يوتيوب.",
+    );
+  }
+}
