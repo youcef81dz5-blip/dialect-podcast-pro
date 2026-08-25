@@ -107,7 +107,8 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
           throw new Error("أدخل رابطاً صالحاً يبدأ بـ https://");
         }
         const resolved = await resolveMedia({ data: { url: trimmed } });
-        sourceUrl = resolved.audioUrl;
+        sourceUrl = trimmed;
+        storagePath = resolved.storagePath;
         duration = resolved.durationSeconds;
         if (!title.trim() && resolved.title) resolvedTitle = resolved.title;
         if (duration && duration / 60 > minutesLeft) {

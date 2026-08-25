@@ -233,7 +233,10 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
     return { ok: true as const, segments: segments.length };
   } catch (error) {
     const message = error instanceof Error ? error.message : "فشل التفريغ.";
-    await supabaseAdmin.from("episodes").update({ status: "failed", error_message: message }).eq("id", episode.id);
+    await supabaseAdmin
+      .from("episodes")
+      .update({ status: existingTranscript ? "ready" : "failed", error_message: message })
+      .eq("id", episode.id);
     throw new Error(message);
   }
 }
