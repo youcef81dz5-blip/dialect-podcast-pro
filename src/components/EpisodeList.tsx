@@ -67,7 +67,7 @@ export function EpisodeList() {
   const runTranscription = useServerFn(transcribeEpisode);
   const transcribe = useMutation({
     mutationFn: async (episodeId: string) => runTranscription({ data: { episodeId } }),
-    onMutate: () => toast.info("بدأ التفريغ، قد يستغرق دقائق."),
+    onMutate: () => toast.info("بدأ التفريغ الكامل؛ تُعالج الحلقات الطويلة على عدة أجزاء."),
     onSuccess: () => {
       toast.success("اكتمل التفريغ.");
       void queryClient.invalidateQueries({ queryKey: ["episodes"] });
@@ -122,12 +122,27 @@ export function EpisodeList() {
             </div>
             <Badge variant={status.variant}>{status.label}</Badge>
             {episode.status === "ready" ? (
-              <Button asChild variant="secondary" size="sm">
-                <Link to="/episodes/$id" params={{ id: episode.id }}>
-                  <FileText className="size-4" />
-                  النص
-                </Link>
-              </Button>
+              <>
+                <Button asChild variant="secondary" size="sm">
+                  <Link to="/episodes/$id" params={{ id: episode.id }}>
+                    <FileText className="size-4" />
+                    النص
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={transcribe.isPending && transcribe.variables === episode.id}
+                  onClick={() => transcribe.mutate(episode.id)}
+                >
+                  {transcribe.isPending && transcribe.variables === episode.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-4" />
+                  )}
+                  إعادة التفريغ
+                </Button>
+              </>
             ) : (
               <Button
                 variant="secondary"
