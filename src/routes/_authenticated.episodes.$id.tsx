@@ -282,22 +282,52 @@ function EpisodeTranscript() {
         <ul className="mt-8 space-y-3">
           {segments.map((segment) => {
             const translated = translations[segment.idx];
+            const fusha = msa[segment.idx];
+            const columns = 1 + (fusha ? 1 : 0) + (translated ? 1 : 0);
             return (
               <li key={segment.id} className="rounded-2xl border bg-card p-4">
                 <p className="text-xs text-muted-foreground" dir="ltr">
                   {formatTime(segment.start_ms)} — {formatTime(segment.end_ms)}
                 </p>
-                <div className={translated ? "mt-2 grid gap-3 md:grid-cols-2" : "mt-2"}>
-                  <Textarea
-                    className="min-h-16 resize-y"
-                    defaultValue={segment.text}
-                    onBlur={(e) => {
-                      const text = e.target.value.trim();
-                      if (text && text !== segment.text) {
-                        save.mutate({ table: "transcript_segments", rowId: segment.id, text });
-                      }
-                    }}
-                  />
+                <div
+                  className={
+                    columns === 3
+                      ? "mt-2 grid gap-3 md:grid-cols-3"
+                      : columns === 2
+                        ? "mt-2 grid gap-3 md:grid-cols-2"
+                        : "mt-2"
+                  }
+                >
+                  <div className="space-y-1">
+                    {columns > 1 && (
+                      <span className="text-[11px] text-muted-foreground">اللهجة</span>
+                    )}
+                    <Textarea
+                      className="min-h-16 resize-y"
+                      defaultValue={segment.text}
+                      onBlur={(e) => {
+                        const text = e.target.value.trim();
+                        if (text && text !== segment.text) {
+                          save.mutate({ table: "transcript_segments", rowId: segment.id, text });
+                        }
+                      }}
+                    />
+                  </div>
+                  {fusha && (
+                    <div className="space-y-1">
+                      <span className="text-[11px] text-muted-foreground">الفصحى</span>
+                      <Textarea
+                        className="min-h-16 resize-y"
+                        defaultValue={fusha.text}
+                        onBlur={(e) => {
+                          const text = e.target.value.trim();
+                          if (text && text !== fusha.text) {
+                            save.mutate({ table: "translation_segments", rowId: fusha.id, text });
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                   {translated && (
                     <Textarea
                       dir="ltr"
