@@ -11,7 +11,9 @@ import {
   Upload,
   Globe,
   FileText,
+  Phone,
 } from "lucide-react";
+import youcefInfoLogo from "@/assets/youcef-info-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -257,15 +259,38 @@ function Landing() {
         </section>
       </main>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <span>صدى — أداة تفريغ وترجمة البودكاست العربي</span>
-          <Link to="/pricing" className="hover:text-foreground">
-            الأسعار
-          </Link>
-          <Link to="/privacy" className="hover:text-foreground">
-            سياسة الخصوصية
-          </Link>
+      <footer className="border-t py-8 text-sm text-muted-foreground">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <span>صدى — أداة تفريغ وترجمة البودكاست العربي</span>
+            <Link to="/pricing" className="hover:text-foreground">
+              الأسعار
+            </Link>
+            <Link to="/privacy" className="hover:text-foreground">
+              سياسة الخصوصية
+            </Link>
+          </div>
+
+          <a
+            href="https://wa.me/213658576572"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-2xl border bg-card/50 px-4 py-3 transition-colors hover:bg-card"
+          >
+            <img
+              src={youcefInfoLogo.url}
+              alt="Youcef Info"
+              className="size-10 rounded-full object-cover"
+            />
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">تطوير وتشغيل</p>
+              <p className="font-semibold text-foreground">Youcef Info</p>
+              <p className="flex items-center gap-1 text-xs text-primary">
+                <Phone className="size-3" />
+                +213 658 57 65 72
+              </p>
+            </div>
+          </a>
         </div>
       </footer>
     </div>
