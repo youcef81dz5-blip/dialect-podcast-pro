@@ -126,6 +126,12 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
   if (episode.status === "processing") throw new Error("الحلقة قيد المعالجة بالفعل.");
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: existingTranscript } = await supabaseAdmin
+    .from("transcripts")
+    .select("id")
+    .eq("episode_id", episode.id)
+    .eq("language", "ar")
+    .maybeSingle();
   let { data: subscription } = await supabaseAdmin
     .from("subscriptions")
     .select("id, minutes_quota, minutes_used, current_period_end")
@@ -144,8 +150,8 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
     if (renewed) subscription = renewed;
   }
   const minutesLeft = subscription ? subscription.minutes_quota - Number(subscription.minutes_used ?? 0) : 0;
-  if (minutesLeft <= 0) throw new Error("انتهى رصيد الدقائق في خطتك الحالية. رقِّ خطتك للمتابعة.");
-  if (episode.duration_seconds && episode.duration_seconds / 60 > minutesLeft) {
+  if (!existingTranscript && minutesLeft <= 0) throw new Error("انتهى رصيد الدقائق في خطتك الحالية. رقِّ خطتك للمتابعة.");
+  if (!existingTranscript && episode.duration_seconds && episode.duration_seconds / 60 > minutesLeft) {
     throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
   }
 
@@ -189,12 +195,6 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
     if (!segments.length) throw new Error("لم يُعثر على كلام في الملف الصوتي.");
 
     const rawText = segments.map((segment) => segment.text).join(" ");
-    const { data: existingTranscript } = await supabaseAdmin
-      .from("transcripts")
-      .select("id")
-      .eq("episode_id", episode.id)
-      .eq("language", "ar")
-      .maybeSingle();
     let transcriptId = existingTranscript?.id;
     if (transcriptId) {
       const { error: clearError } = await supabaseAdmin
@@ -224,7 +224,7 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
       throw new Error(segmentsError.message);
     }
     await supabaseAdmin.from("episodes").update({ status: "ready", error_message: null }).eq("id", episode.id);
-    if (subscription) {
+    if (subscription && !existingTranscript) {
       await supabaseAdmin
         .from("subscriptions")
         .update({ minutes_used: Number(subscription.minutes_used ?? 0) + durationMs / 60000 })
