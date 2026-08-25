@@ -212,6 +212,22 @@ function EpisodeTranscript() {
               {hasTranslation ? "إعادة الترجمة" : "ترجمة إنجليزية"}
             </Button>
 
+            {isDialect && (
+              <Button
+                variant="secondary"
+                disabled={toMsa.isPending}
+                onClick={() => toMsa.mutate()}
+              >
+                {toMsa.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <WandSparkles className="size-4" />
+                )}
+                {hasMsa ? "إعادة التفصيح" : "تحويل إلى الفصحى"}
+              </Button>
+            )}
+
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
