@@ -160,8 +160,10 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         <DialogHeader className="text-right">
           <DialogTitle>حلقة جديدة</DialogTitle>
           <DialogDescription>
-            ارفع ملفاً صوتياً حتى 200 ميجابايت أو الصق رابطاً مباشراً للحلقة.
+            ارفع ملفاً صوتياً حتى 200 ميجابايت، أو الصق رابط يوتيوب / Apple Podcasts / خلاصة RSS
+            / رابط صوتي مباشر ونستخرج الصوت تلقائياً.
           </DialogDescription>
+
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as "upload" | "url")}>
@@ -186,16 +188,20 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
             />
           </TabsContent>
           <TabsContent value="url" className="pt-4">
-            <Label htmlFor="audio-url">رابط الحلقة</Label>
+            <Label htmlFor="audio-url">رابط الحلقة أو الفيديو</Label>
             <Input
               id="audio-url"
               dir="ltr"
-              placeholder="https://example.com/episode.mp3"
+              placeholder="https://youtube.com/watch?v=… أو رابط RSS/MP3"
               className="mt-2"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
+            <p className="mt-2 text-xs text-muted-foreground">
+              مدعوم: يوتيوب، Apple Podcasts، خلاصات RSS، وروابط MP3/M4A/WAV المباشرة.
+            </p>
           </TabsContent>
+
         </Tabs>
 
         <div className="grid gap-4 sm:grid-cols-2">
