@@ -189,26 +189,39 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
     if (!segments.length) throw new Error("لم يُعثر على كلام في الملف الصوتي.");
 
     const rawText = segments.map((segment) => segment.text).join(" ");
-    const { data: transcript, error: insertError } = await supabaseAdmin
-      .from("transcripts")
-      .insert({ episode_id: episode.id, language: "ar", model: "google/gemini-2.5-flash", raw_text: rawText, refined_text: rawText })
-      .select("id")
-      .single();
-    if (insertError || !transcript) throw new Error(insertError?.message ?? "تعذّر حفظ التفريغ.");
-    const { error: segmentsError } = await supabaseAdmin.from("transcript_segments").insert(
-      segments.map((segment, index) => ({ transcript_id: transcript.id, idx: index, ...segment })),
-    );
-    if (segmentsError) {
-      await supabaseAdmin.from("transcripts").delete().eq("id", transcript.id);
-      throw new Error(segmentsError.message);
-    }
-    const { data: oldTranscripts } = await supabaseAdmin
+    const { data: existingTranscript } = await supabaseAdmin
       .from("transcripts")
       .select("id")
       .eq("episode_id", episode.id)
-      .neq("id", transcript.id);
-    if (oldTranscripts?.length) {
-      await supabaseAdmin.from("transcripts").delete().in("id", oldTranscripts.map((row) => row.id));
+      .eq("language", "ar")
+      .maybeSingle();
+    let transcriptId = existingTranscript?.id;
+    if (transcriptId) {
+      const { error: clearError } = await supabaseAdmin
+        .from("transcript_segments")
+        .delete()
+        .eq("transcript_id", transcriptId);
+      if (clearError) throw new Error(clearError.message);
+      const { error: updateError } = await supabaseAdmin
+        .from("transcripts")
+        .update({ model: "google/gemini-2.5-flash", raw_text: rawText, refined_text: rawText })
+        .eq("id", transcriptId);
+      if (updateError) throw new Error(updateError.message);
+    } else {
+      const { data: transcript, error: insertError } = await supabaseAdmin
+        .from("transcripts")
+        .insert({ episode_id: episode.id, language: "ar", model: "google/gemini-2.5-flash", raw_text: rawText, refined_text: rawText })
+        .select("id")
+        .single();
+      if (insertError || !transcript) throw new Error(insertError?.message ?? "تعذّر حفظ التفريغ.");
+      transcriptId = transcript.id;
+    }
+    if (!transcriptId) throw new Error("تعذّر تحديد سجل التفريغ.");
+    const { error: segmentsError } = await supabaseAdmin.from("transcript_segments").insert(
+      segments.map((segment, index) => ({ transcript_id: transcriptId, idx: index, ...segment })),
+    );
+    if (segmentsError) {
+      throw new Error(segmentsError.message);
     }
     await supabaseAdmin.from("episodes").update({ status: "ready", error_message: null }).eq("id", episode.id);
     if (subscription) {
