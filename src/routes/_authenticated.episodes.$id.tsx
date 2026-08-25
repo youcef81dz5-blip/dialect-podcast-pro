@@ -43,6 +43,8 @@ function EpisodeTranscript() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const runTranslate = useServerFn(translateEpisode);
+  const runMsa = useServerFn(convertEpisodeToMsa);
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["episode-transcript", id],
