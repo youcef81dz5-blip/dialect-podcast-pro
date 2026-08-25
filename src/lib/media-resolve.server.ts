@@ -90,10 +90,22 @@ async function resolveYoutube(videoId: string): Promise<ResolvedMedia> {
       "استخراج صوت يوتيوب يحتاج إلى تفعيل مزوّد خارجي (مفتاح RapidAPI). أضف المفتاح أو استخدم رابطاً صوتياً مباشراً/خلاصة RSS.",
     );
   }
-  const res = await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${videoId}`, {
-    headers: { "x-rapidapi-key": key, "x-rapidapi-host": "youtube-mp36.p.rapidapi.com" },
+  const host = process.env['RAPIDAPI_YOUTUBE_HOST'] || "youtube-mp36.p.rapidapi.com";
+  const res = await fetch(`https://${host}/dl?id=${videoId}`, {
+    headers: { "x-rapidapi-key": key, "x-rapidapi-host": host },
   });
-  if (!res.ok) throw new Error("تعذّر استخراج الصوت من يوتيوب حالياً.");
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    console.error("[youtube] provider error", res.status, detail.slice(0, 300));
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(
+        `مفتاح RapidAPI غير مشترك في خدمة «${host}». اشترك في الخطة المجانية للخدمة من RapidAPI ثم أعد المحاولة.`,
+      );
+    }
+    if (res.status === 429) throw new Error("تم تجاوز حد الطلبات لدى مزوّد يوتيوب، حاول لاحقاً.");
+    throw new Error("تعذّر استخراج الصوت من يوتيوب حالياً.");
+  }
+
   const json = (await res.json()) as {
     link?: string;
     title?: string;
