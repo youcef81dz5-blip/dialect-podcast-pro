@@ -59,6 +59,8 @@ function readDuration(file: File): Promise<number | null> {
 export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const resolveMedia = useServerFn(resolveMediaUrl);
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [dialect, setDialect] = useState<Dialect>("msa");
@@ -118,7 +120,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         .from("episodes")
         .insert({
           user_id: user.id,
-          title: finalTitle || (file?.name ?? "حلقة بدون عنوان"),
+          title: finalTitle || resolvedTitle || (file?.name ?? "حلقة بدون عنوان"),
           source_type: tab,
           source_url: sourceUrl,
           storage_path: storagePath,
