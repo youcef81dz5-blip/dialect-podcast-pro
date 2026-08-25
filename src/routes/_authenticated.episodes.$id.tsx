@@ -153,7 +153,10 @@ function EpisodeTranscript() {
   const episode = data?.episode;
   const segments = data?.segments ?? [];
   const translations = data?.translations ?? {};
+  const msa = data?.msa ?? {};
   const hasTranslation = Object.keys(translations).length > 0;
+  const hasMsa = Object.keys(msa).length > 0;
+  const isDialect = !!episode?.dialect && episode.dialect !== "msa";
 
   const cues: SubtitleCue[] = segments.map((segment) => ({
     start_ms: segment.start_ms,
@@ -168,10 +171,16 @@ function EpisodeTranscript() {
     text: cue.translation ?? cue.text,
   }));
 
+  const msaCues: SubtitleCue[] = segments.map((segment) => ({
+    start_ms: segment.start_ms,
+    end_ms: segment.end_ms,
+    text: msa[segment.idx]?.text ?? segment.text,
+  }));
+
   const base = safeFileName(episode?.title ?? "episode");
 
-  const exportFile = (kind: "srt" | "vtt" | "txt", mode: "ar" | "en" | "both") => {
-    const source = mode === "en" ? englishCues : cues;
+  const exportFile = (kind: "srt" | "vtt" | "txt", mode: "ar" | "en" | "both" | "msa") => {
+    const source = mode === "en" ? englishCues : mode === "msa" ? msaCues : cues;
     const bilingual = mode === "both";
     const render = kind === "srt" ? toSrt : kind === "vtt" ? toVtt : toTxt;
     downloadText(`${base}-${mode}.${kind}`, render(source, bilingual));
