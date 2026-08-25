@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Upload, Link2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveMediaUrl } from "@/lib/media-resolve.functions";
 import { useAuth } from "@/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,7 +82,9 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
       let storagePath: string | null = null;
       let sourceUrl: string | null = null;
       let duration: number | null = null;
+      let resolvedTitle: string | null = null;
       const finalTitle = title.trim();
+
 
       if (tab === "upload") {
         if (!file) throw new Error("اختر ملفاً صوتياً أولاً.");
