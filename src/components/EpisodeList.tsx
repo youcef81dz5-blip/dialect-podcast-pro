@@ -67,7 +67,7 @@ export function EpisodeList() {
   const runTranscription = useServerFn(transcribeEpisode);
   const transcribe = useMutation({
     mutationFn: async (episodeId: string) => runTranscription({ data: { episodeId } }),
-    onMutate: () => toast.info("بدأ التفريغ، قد يستغرق دقائق."),
+    onMutate: () => toast.info("بدأ التفريغ الكامل؛ تُعالج الحلقات الطويلة على عدة أجزاء."),
     onSuccess: () => {
       toast.success("اكتمل التفريغ.");
       void queryClient.invalidateQueries({ queryKey: ["episodes"] });
