@@ -22,13 +22,54 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
+function salvageObjects(json: string): unknown[] {
+  // ينقذ العناصر المكتملة عندما يُقطع رد النموذج في المنتصف
+  const out: unknown[] = [];
+  let depth = 0;
+  let startIdx = -1;
+  let inStr = false;
+  let esc = false;
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i]!;
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === "\\") esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "{") {
+      if (depth === 0) startIdx = i;
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0 && startIdx !== -1) {
+        try {
+          out.push(JSON.parse(json.slice(startIdx, i + 1)));
+        } catch {
+          /* تجاهل العنصر التالف */
+        }
+        startIdx = -1;
+      }
+    }
+  }
+  return out;
+}
+
 function parseSegments(raw: string): Segment[] {
   const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
   const start = cleaned.indexOf("[");
+  if (start === -1) throw new Error("تعذّر قراءة نتيجة التفريغ.");
   const end = cleaned.lastIndexOf("]");
-  if (start === -1 || end === -1) throw new Error("تعذّر قراءة نتيجة التفريغ.");
-  const parsed = JSON.parse(cleaned.slice(start, end + 1)) as unknown;
-  if (!Array.isArray(parsed)) throw new Error("تعذّر قراءة نتيجة التفريغ.");
+  const slice = cleaned.slice(start, end > start ? end + 1 : undefined);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(slice);
+  } catch {
+    parsed = salvageObjects(slice);
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("تعذّر قراءة نتيجة التفريغ.");
+
   return parsed
     .map((item, idx) => {
       const row = item as Record<string, unknown>;
