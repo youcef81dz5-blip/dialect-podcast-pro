@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowRight, Download, Languages, Loader2 } from "lucide-react";
+import { ArrowRight, Download, Languages, Loader2, WandSparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { translateEpisode } from "@/lib/translation.functions";
+import { convertEpisodeToMsa } from "@/lib/msa.functions";
 import { downloadText, safeFileName, toSrt, toTxt, toVtt, type SubtitleCue } from "@/lib/subtitles";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +43,8 @@ function EpisodeTranscript() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const runTranslate = useServerFn(translateEpisode);
+  const runMsa = useServerFn(convertEpisodeToMsa);
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["episode-transcript", id],
@@ -60,7 +63,10 @@ function EpisodeTranscript() {
         .maybeSingle();
       if (transcriptError) throw transcriptError;
 
-      if (!transcript) return { episode, segments: [], translations: {} as Record<number, { id: string; text: string }> };
+      const emptyMap = () => ({}) as Record<number, { id: string; text: string }>;
+      if (!transcript) {
+        return { episode, segments: [], translations: emptyMap(), msa: emptyMap() };
+      }
 
       const { data: segments, error: segmentsError } = await supabase
         .from("transcript_segments")
@@ -69,24 +75,30 @@ function EpisodeTranscript() {
         .order("idx", { ascending: true });
       if (segmentsError) throw segmentsError;
 
-      const { data: translation } = await supabase
+      const { data: versions } = await supabase
         .from("translations")
-        .select("id")
+        .select("id, target_language")
         .eq("transcript_id", transcript.id)
-        .eq("target_language", "en")
-        .maybeSingle();
+        .in("target_language", ["en", "ar-msa"]);
 
-      const translations: Record<number, { id: string; text: string }> = {};
-      if (translation) {
+      const loadRows = async (translationId: string) => {
+        const map = emptyMap();
         const { data: rows } = await supabase
           .from("translation_segments")
           .select("id, idx, text")
-          .eq("translation_id", translation.id)
+          .eq("translation_id", translationId)
           .order("idx", { ascending: true });
-        for (const row of rows ?? []) translations[row.idx] = { id: row.id, text: row.text };
-      }
+        for (const row of rows ?? []) map[row.idx] = { id: row.id, text: row.text };
+        return map;
+      };
 
-      return { episode, segments: segments ?? [], translations };
+      const enVersion = versions?.find((v) => v.target_language === "en");
+      const msaVersion = versions?.find((v) => v.target_language === "ar-msa");
+
+      const translations = enVersion ? await loadRows(enVersion.id) : emptyMap();
+      const msa = msaVersion ? await loadRows(msaVersion.id) : emptyMap();
+
+      return { episode, segments: segments ?? [], translations, msa };
     },
   });
 
@@ -119,6 +131,16 @@ function EpisodeTranscript() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const toMsa = useMutation({
+    mutationFn: () => runMsa({ data: { episodeId: id } }),
+    onMutate: () => toast.info("جارٍ التحويل إلى الفصحى…"),
+    onSuccess: () => {
+      toast.success("تم تحويل النص إلى الفصحى.");
+      void queryClient.invalidateQueries({ queryKey: ["episode-transcript", id] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   if (isLoading) {
     return (
       <main className="mx-auto flex max-w-3xl items-center justify-center px-6 py-20 text-sm text-muted-foreground">
@@ -131,7 +153,10 @@ function EpisodeTranscript() {
   const episode = data?.episode;
   const segments = data?.segments ?? [];
   const translations = data?.translations ?? {};
+  const msa = data?.msa ?? {};
   const hasTranslation = Object.keys(translations).length > 0;
+  const hasMsa = Object.keys(msa).length > 0;
+  const isDialect = !!episode?.dialect && episode.dialect !== "msa";
 
   const cues: SubtitleCue[] = segments.map((segment) => ({
     start_ms: segment.start_ms,
@@ -146,10 +171,16 @@ function EpisodeTranscript() {
     text: cue.translation ?? cue.text,
   }));
 
+  const msaCues: SubtitleCue[] = segments.map((segment) => ({
+    start_ms: segment.start_ms,
+    end_ms: segment.end_ms,
+    text: msa[segment.idx]?.text ?? segment.text,
+  }));
+
   const base = safeFileName(episode?.title ?? "episode");
 
-  const exportFile = (kind: "srt" | "vtt" | "txt", mode: "ar" | "en" | "both") => {
-    const source = mode === "en" ? englishCues : cues;
+  const exportFile = (kind: "srt" | "vtt" | "txt", mode: "ar" | "en" | "both" | "msa") => {
+    const source = mode === "en" ? englishCues : mode === "msa" ? msaCues : cues;
     const bilingual = mode === "both";
     const render = kind === "srt" ? toSrt : kind === "vtt" ? toVtt : toTxt;
     downloadText(`${base}-${mode}.${kind}`, render(source, bilingual));
@@ -181,6 +212,22 @@ function EpisodeTranscript() {
               {hasTranslation ? "إعادة الترجمة" : "ترجمة إنجليزية"}
             </Button>
 
+            {isDialect && (
+              <Button
+                variant="secondary"
+                disabled={toMsa.isPending}
+                onClick={() => toMsa.mutate()}
+              >
+                {toMsa.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <WandSparkles className="size-4" />
+                )}
+                {hasMsa ? "إعادة التفصيح" : "تحويل إلى الفصحى"}
+              </Button>
+            )}
+
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -193,6 +240,16 @@ function EpisodeTranscript() {
                 <DropdownMenuItem onSelect={() => exportFile("srt", "ar")}>SRT عربي</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => exportFile("vtt", "ar")}>VTT عربي</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => exportFile("txt", "ar")}>TXT عربي</DropdownMenuItem>
+                {hasMsa && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>الفصحى</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => exportFile("srt", "msa")}>SRT فصحى</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("vtt", "msa")}>VTT فصحى</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("txt", "msa")}>TXT فصحى</DropdownMenuItem>
+                  </>
+                )}
+
                 {hasTranslation && (
                   <>
                     <DropdownMenuSeparator />
@@ -225,22 +282,52 @@ function EpisodeTranscript() {
         <ul className="mt-8 space-y-3">
           {segments.map((segment) => {
             const translated = translations[segment.idx];
+            const fusha = msa[segment.idx];
+            const columns = 1 + (fusha ? 1 : 0) + (translated ? 1 : 0);
             return (
               <li key={segment.id} className="rounded-2xl border bg-card p-4">
                 <p className="text-xs text-muted-foreground" dir="ltr">
                   {formatTime(segment.start_ms)} — {formatTime(segment.end_ms)}
                 </p>
-                <div className={translated ? "mt-2 grid gap-3 md:grid-cols-2" : "mt-2"}>
-                  <Textarea
-                    className="min-h-16 resize-y"
-                    defaultValue={segment.text}
-                    onBlur={(e) => {
-                      const text = e.target.value.trim();
-                      if (text && text !== segment.text) {
-                        save.mutate({ table: "transcript_segments", rowId: segment.id, text });
-                      }
-                    }}
-                  />
+                <div
+                  className={
+                    columns === 3
+                      ? "mt-2 grid gap-3 md:grid-cols-3"
+                      : columns === 2
+                        ? "mt-2 grid gap-3 md:grid-cols-2"
+                        : "mt-2"
+                  }
+                >
+                  <div className="space-y-1">
+                    {columns > 1 && (
+                      <span className="text-[11px] text-muted-foreground">اللهجة</span>
+                    )}
+                    <Textarea
+                      className="min-h-16 resize-y"
+                      defaultValue={segment.text}
+                      onBlur={(e) => {
+                        const text = e.target.value.trim();
+                        if (text && text !== segment.text) {
+                          save.mutate({ table: "transcript_segments", rowId: segment.id, text });
+                        }
+                      }}
+                    />
+                  </div>
+                  {fusha && (
+                    <div className="space-y-1">
+                      <span className="text-[11px] text-muted-foreground">الفصحى</span>
+                      <Textarea
+                        className="min-h-16 resize-y"
+                        defaultValue={fusha.text}
+                        onBlur={(e) => {
+                          const text = e.target.value.trim();
+                          if (text && text !== fusha.text) {
+                            save.mutate({ table: "translation_segments", rowId: fusha.id, text });
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                   {translated && (
                     <Textarea
                       dir="ltr"
