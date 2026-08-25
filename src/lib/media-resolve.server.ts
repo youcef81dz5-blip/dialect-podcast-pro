@@ -38,10 +38,15 @@ export function youtubeVideoId(rawUrl: string): string | null {
 
 function parseDurationToSeconds(value: string | null): number | null {
   if (!value) return null;
-  if (/^\d+$/.test(value.trim())) return Number(value.trim());
+  if (/^\d+(\.\d+)?$/.test(value.trim())) return Math.round(Number(value.trim()));
   const parts = value.split(":").map((p) => Number(p));
   if (parts.some((p) => Number.isNaN(p))) return null;
-  return parts.reduce((acc, p) => acc * 60 + p, 0);
+  return Math.round(parts.reduce((acc, p) => acc * 60 + p, 0));
+}
+
+function normalizeDurationSeconds(value: number | null | undefined): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return null;
+  return Math.round(value);
 }
 
 /** يستخرج أول حلقة صوتية من خلاصة RSS */
@@ -123,7 +128,7 @@ async function resolveYoutube(videoId: string): Promise<ResolvedMedia> {
   return {
     audioUrl: json.link,
     title: json.title ?? null,
-    durationSeconds: json.duration ?? null,
+    durationSeconds: normalizeDurationSeconds(json.duration),
     provider: "youtube",
   };
 }
