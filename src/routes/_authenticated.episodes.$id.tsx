@@ -131,6 +131,16 @@ function EpisodeTranscript() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const toMsa = useMutation({
+    mutationFn: () => runMsa({ data: { episodeId: id } }),
+    onMutate: () => toast.info("جارٍ التحويل إلى الفصحى…"),
+    onSuccess: () => {
+      toast.success("تم تحويل النص إلى الفصحى.");
+      void queryClient.invalidateQueries({ queryKey: ["episode-transcript", id] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   if (isLoading) {
     return (
       <main className="mx-auto flex max-w-3xl items-center justify-center px-6 py-20 text-sm text-muted-foreground">
