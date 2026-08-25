@@ -52,17 +52,17 @@ export function parseBatchSegments(raw: string): {
   const root = Array.isArray(parsed)
     ? { segments: parsed, covered_until_ms: null }
     : (parsed as Record<string, unknown>);
-  const rows = Array.isArray(root?.segments) ? root.segments : [];
+  const rows = Array.isArray(root?.['segments']) ? root['segments'] : [];
   const segments = rows
     .map((item, index) => {
       const row = item as Record<string, unknown>;
-      const startMs = Math.max(0, Math.round(Number(row.start_ms ?? row.start ?? index * 5000)));
-      const endMs = Math.max(startMs, Math.round(Number(row.end_ms ?? row.end ?? startMs + 5000)));
-      return { start_ms: startMs, end_ms: endMs, text: String(row.text ?? "").trim() };
+      const startMs = Math.max(0, Math.round(Number(row['start_ms'] ?? row['start'] ?? index * 5000)));
+      const endMs = Math.max(startMs, Math.round(Number(row['end_ms'] ?? row['end'] ?? startMs + 5000)));
+      return { start_ms: startMs, end_ms: endMs, text: String(row['text'] ?? "").trim() };
     })
     .filter((segment) => segment.text.length > 0);
 
-  const coverage = Number(root?.covered_until_ms);
+  const coverage = Number(root?.['covered_until_ms']);
   return {
     segments,
     coveredUntilMs: Number.isFinite(coverage) && coverage > 0 ? Math.round(coverage) : null,
