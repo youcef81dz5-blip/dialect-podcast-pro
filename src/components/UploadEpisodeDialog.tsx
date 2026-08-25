@@ -99,8 +99,15 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         if (!/^https:\/\/\S+$/i.test(trimmed)) {
           throw new Error("أدخل رابطاً صالحاً يبدأ بـ https://");
         }
-        sourceUrl = trimmed;
+        const resolved = await resolveMedia({ data: { url: trimmed } });
+        sourceUrl = resolved.audioUrl;
+        duration = resolved.durationSeconds;
+        if (!title.trim() && resolved.title) resolvedTitle = resolved.title;
+        if (duration && duration / 60 > minutesLeft) {
+          throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
+        }
       }
+
 
       const { data: episode, error } = await supabase
         .from("episodes")
