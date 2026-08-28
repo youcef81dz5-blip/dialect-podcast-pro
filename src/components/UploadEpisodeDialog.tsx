@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveMediaUrl } from "@/lib/media-resolve.functions";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/lib/i18n";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ function readDuration(file: File): Promise<number | null> {
 
 export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
   const { user } = useAuth();
+  const t = useT();
   const queryClient = useQueryClient();
   const resolveMedia = useServerFn(resolveMediaUrl);
 
@@ -78,8 +80,8 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error("يجب تسجيل الدخول.");
-      if (minutesLeft <= 0) throw new Error("انتهى رصيد الدقائق في خطتك الحالية.");
+      if (!user) throw new Error(t("يجب تسجيل الدخول."));
+      if (minutesLeft <= 0) throw new Error(t("انتهى رصيد الدقائق في خطتك الحالية."));
 
       let storagePath: string | null = null;
       let sourceUrl: string | null = null;
@@ -89,11 +91,11 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
 
 
       if (tab === "upload") {
-        if (!file) throw new Error("اختر ملفاً صوتياً أولاً.");
-        if (file.size > MAX_BYTES) throw new Error("حجم الملف يتجاوز 200 ميجابايت.");
+        if (!file) throw new Error(t("اختر ملفاً صوتياً أولاً."));
+        if (file.size > MAX_BYTES) throw new Error(t("حجم الملف يتجاوز 200 ميجابايت."));
         duration = await readDuration(file);
         if (duration && duration / 60 > minutesLeft) {
-          throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
+          throw new Error(t("مدة الحلقة تتجاوز رصيد الدقائق المتبقي."));
         }
         const ext = file.name.split(".").pop() ?? "mp3";
         storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
@@ -104,7 +106,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
       } else {
         const trimmed = url.trim();
         if (!/^https:\/\/\S+$/i.test(trimmed)) {
-          throw new Error("أدخل رابطاً صالحاً يبدأ بـ https://");
+          throw new Error(t("أدخل رابطاً صالحاً يبدأ بـ https://"));
         }
         const resolved = await resolveMedia({ data: { url: trimmed } });
         sourceUrl = trimmed;
@@ -112,7 +114,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         duration = resolved.durationSeconds;
         if (!title.trim() && resolved.title) resolvedTitle = resolved.title;
         if (duration && duration / 60 > minutesLeft) {
-          throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
+          throw new Error(t("مدة الحلقة تتجاوز رصيد الدقائق المتبقي."));
         }
       }
 
@@ -121,7 +123,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         .from("episodes")
         .insert({
           user_id: user.id,
-          title: finalTitle || resolvedTitle || (file?.name ?? "حلقة بدون عنوان"),
+          title: finalTitle || resolvedTitle || (file?.name ?? t("حلقة بدون عنوان")),
           source_type: tab,
           source_url: sourceUrl,
           storage_path: storagePath,
@@ -135,7 +137,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
       return episode;
     },
     onSuccess: () => {
-      toast.success("تمت إضافة الحلقة إلى قائمة الانتظار.");
+      toast.success(t("تمت إضافة الحلقة إلى قائمة الانتظار."));
       void queryClient.invalidateQueries({ queryKey: ["episodes"] });
       setOpen(false);
       reset();
@@ -154,15 +156,14 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
       <DialogTrigger asChild>
         <Button>
           <Upload className="size-4" />
-          رفع حلقة
+          {t("رفع حلقة")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="text-right">
-          <DialogTitle>حلقة جديدة</DialogTitle>
+          <DialogTitle>{t("حلقة جديدة")}</DialogTitle>
           <DialogDescription>
-            ارفع ملفاً صوتياً حتى 200 ميجابايت، أو الصق رابط يوتيوب / Apple Podcasts / خلاصة RSS
-            / رابط صوتي مباشر ونستخرج الصوت تلقائياً.
+            {t("ارفع ملفاً صوتياً حتى 200 ميجابايت، أو الصق رابط يوتيوب / Apple Podcasts / خلاصة RSS / رابط صوتي مباشر ونستخرج الصوت تلقائياً.")}
           </DialogDescription>
 
         </DialogHeader>
@@ -171,15 +172,15 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="upload">
               <Upload className="size-4" />
-              ملف صوتي
+              {t("ملف صوتي")}
             </TabsTrigger>
             <TabsTrigger value="url">
               <Link2 className="size-4" />
-              رابط
+              {t("رابط")}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="upload" className="pt-4">
-            <Label htmlFor="audio-file">الملف الصوتي</Label>
+            <Label htmlFor="audio-file">{t("الملف الصوتي")}</Label>
             <Input
               id="audio-file"
               type="file"
@@ -189,17 +190,17 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
             />
           </TabsContent>
           <TabsContent value="url" className="pt-4">
-            <Label htmlFor="audio-url">رابط الحلقة أو الفيديو</Label>
+            <Label htmlFor="audio-url">{t("رابط الحلقة أو الفيديو")}</Label>
             <Input
               id="audio-url"
               dir="ltr"
-              placeholder="https://youtube.com/watch?v=… أو رابط RSS/MP3"
+              placeholder={t("https://youtube.com/watch?v=… أو رابط RSS/MP3")}
               className="mt-2"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              مدعوم: يوتيوب، Apple Podcasts، خلاصات RSS، وروابط MP3/M4A/WAV المباشرة.
+              {t("مدعوم: يوتيوب، Apple Podcasts، خلاصات RSS، وروابط MP3/M4A/WAV المباشرة.")}
             </p>
           </TabsContent>
 
@@ -207,17 +208,17 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="episode-title">عنوان الحلقة</Label>
+            <Label htmlFor="episode-title">{t("عنوان الحلقة")}</Label>
             <Input
               id="episode-title"
               className="mt-2"
-              placeholder="مثال: الحلقة 12 — ريادة الأعمال"
+              placeholder={t("مثال: الحلقة 12 — ريادة الأعمال")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
           <div>
-            <Label>اللهجة</Label>
+            <Label>{t("اللهجة")}</Label>
             <Select value={dialect} onValueChange={(v) => setDialect(v as Dialect)}>
               <SelectTrigger className="mt-2">
                 <SelectValue />
@@ -225,7 +226,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
               <SelectContent>
                 {DIALECTS.map((d) => (
                   <SelectItem key={d.value} value={d.value}>
-                    {d.label}
+                    {t(d.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -234,7 +235,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          الرصيد المتبقي: {Math.max(0, minutesLeft).toFixed(0)} دقيقة
+          {t("رصيد الدقائق")}: {Math.max(0, minutesLeft).toFixed(0)}
         </p>
 
         <Button
@@ -243,7 +244,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
           onClick={() => mutation.mutate()}
         >
           {mutation.isPending && <Loader2 className="size-4 animate-spin" />}
-          {mutation.isPending ? "جارٍ الرفع…" : "إضافة الحلقة"}
+          {mutation.isPending ? t("جارٍ الرفع…") : t("إضافة الحلقة")}
         </Button>
       </DialogContent>
     </Dialog>
