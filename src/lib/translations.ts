@@ -400,6 +400,19 @@ export const dictionary: Record<string, Entry> = {
     en: "No transcript yet. Start transcription from the episodes page.",
     fr: "Pas encore de transcription. Lancez-la depuis la page des épisodes.",
   },
+  "العودة للوحة": { en: "Back to dashboard", fr: "Retour au tableau de bord" },
+  "ملف JSON يحتوي حلقاتك، النصوص، الترجمات، وبيانات اشتراكك.": {
+    en: "A JSON file with your episodes, transcripts, translations and subscription data.",
+    fr: "Un fichier JSON avec vos épisodes, transcriptions, traductions et données d'abonnement.",
+  },
+  "تصدير JSON": { en: "Export JSON", fr: "Exporter en JSON" },
+  "سيُحذف حسابك مع كل الملفات الصوتية والنصوص والترجمات نهائياً. لا يمكن التراجع.": {
+    en: "Your account, audio files, transcripts and translations will be deleted permanently. This cannot be undone.",
+    fr: "Votre compte, vos fichiers audio, transcriptions et traductions seront supprimés définitivement. Action irréversible.",
+  },
+  "اكتب «حذف» للتأكيد": { en: 'Type "Delete" to confirm', fr: 'Tapez "Supprimer" pour confirmer' },
+  "حذف الحساب نهائياً": { en: "Delete account permanently", fr: "Supprimer définitivement le compte" },
+  "اطّلع على": { en: "See our", fr: "Consultez notre" },
 };
 
 export function translate(text: string, lang: Lang): string {
