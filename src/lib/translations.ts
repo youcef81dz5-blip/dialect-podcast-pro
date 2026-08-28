@@ -317,6 +317,89 @@ export const dictionary: Record<string, Entry> = {
   "SRT ثنائي": { en: "SRT bilingual", fr: "SRT bilingue" },
   "VTT ثنائي": { en: "VTT bilingual", fr: "VTT bilingue" },
   "TXT ثنائي": { en: "TXT bilingual", fr: "TXT bilingue" },
+
+  // Episode list
+  "في الانتظار": { en: "Queued", fr: "En attente" },
+  "قيد المعالجة": { en: "Processing", fr: "En cours" },
+  "جاهزة": { en: "Ready", fr: "Prêt" },
+  "فشلت": { en: "Failed", fr: "Échec" },
+  "الخليجية": { en: "Gulf", fr: "Golfe" },
+  "المصرية": { en: "Egyptian", fr: "Égyptien" },
+  "الشامية": { en: "Levantine", fr: "Levantin" },
+  "المغاربية": { en: "Maghrebi", fr: "Maghrébin" },
+  "تم حذف الحلقة.": { en: "Episode deleted.", fr: "Épisode supprimé." },
+  "بدأ التفريغ الكامل؛ تُعالج الحلقات الطويلة على عدة أجزاء.": {
+    en: "Full transcription started; long episodes are processed in several parts.",
+    fr: "Transcription complète lancée ; les épisodes longs sont traités en plusieurs parties.",
+  },
+  "اكتمل التفريغ.": { en: "Transcription complete.", fr: "Transcription terminée." },
+  "جارٍ تحميل الحلقات…": { en: "Loading episodes…", fr: "Chargement des épisodes…" },
+  "لا توجد حلقات بعد": { en: "No episodes yet", fr: "Aucun épisode pour l'instant" },
+  "ارفع ملفاً صوتياً أو الصق رابط حلقة لتضاف إلى قائمة الانتظار.": {
+    en: "Upload an audio file or paste an episode link to add it to the queue.",
+    fr: "Importez un fichier audio ou collez un lien d'épisode pour l'ajouter à la file.",
+  },
+  "ملف مرفوع": { en: "Uploaded file", fr: "Fichier importé" },
+  "رابط": { en: "Link", fr: "Lien" },
+  "النص": { en: "Transcript", fr: "Transcription" },
+  "إعادة التفريغ": { en: "Re-transcribe", fr: "Retranscrire" },
+  "تفريغ": { en: "Transcribe", fr: "Transcrire" },
+  "حذف الحلقة": { en: "Delete episode", fr: "Supprimer l'épisode" },
+
+  // Upload dialog
+  "رفع حلقة": { en: "Upload episode", fr: "Importer un épisode" },
+  "حلقة جديدة": { en: "New episode", fr: "Nouvel épisode" },
+  "ارفع ملفاً صوتياً حتى 200 ميجابايت، أو الصق رابط يوتيوب / Apple Podcasts / خلاصة RSS / رابط صوتي مباشر ونستخرج الصوت تلقائياً.":
+    {
+      en: "Upload an audio file up to 200 MB, or paste a YouTube / Apple Podcasts / RSS feed / direct audio link and we extract the audio automatically.",
+      fr: "Importez un fichier audio jusqu'à 200 Mo, ou collez un lien YouTube / Apple Podcasts / flux RSS / audio direct : nous extrayons l'audio automatiquement.",
+    },
+  "ملف صوتي": { en: "Audio file", fr: "Fichier audio" },
+  "الملف الصوتي": { en: "Audio file", fr: "Fichier audio" },
+  "رابط الحلقة أو الفيديو": { en: "Episode or video link", fr: "Lien de l'épisode ou de la vidéo" },
+  "https://youtube.com/watch?v=… أو رابط RSS/MP3": {
+    en: "https://youtube.com/watch?v=… or an RSS/MP3 link",
+    fr: "https://youtube.com/watch?v=… ou un lien RSS/MP3",
+  },
+  "مدعوم: يوتيوب، Apple Podcasts، خلاصات RSS، وروابط MP3/M4A/WAV المباشرة.": {
+    en: "Supported: YouTube, Apple Podcasts, RSS feeds, and direct MP3/M4A/WAV links.",
+    fr: "Pris en charge : YouTube, Apple Podcasts, flux RSS et liens MP3/M4A/WAV directs.",
+  },
+  "عنوان الحلقة": { en: "Episode title", fr: "Titre de l'épisode" },
+  "مثال: الحلقة 12 — ريادة الأعمال": {
+    en: "e.g. Episode 12 — Entrepreneurship",
+    fr: "ex. Épisode 12 — Entrepreneuriat",
+  },
+  "جارٍ الرفع…": { en: "Uploading…", fr: "Import en cours…" },
+  "إضافة الحلقة": { en: "Add episode", fr: "Ajouter l'épisode" },
+  "تمت إضافة الحلقة إلى قائمة الانتظار.": {
+    en: "Episode added to the queue.",
+    fr: "Épisode ajouté à la file d'attente.",
+  },
+  "يجب تسجيل الدخول.": { en: "You must sign in.", fr: "Vous devez vous connecter." },
+  "انتهى رصيد الدقائق في خطتك الحالية.": {
+    en: "Your plan's minutes are used up.",
+    fr: "Le crédit de minutes de votre offre est épuisé.",
+  },
+  "اختر ملفاً صوتياً أولاً.": { en: "Pick an audio file first.", fr: "Choisissez d'abord un fichier audio." },
+  "حجم الملف يتجاوز 200 ميجابايت.": { en: "The file exceeds 200 MB.", fr: "Le fichier dépasse 200 Mo." },
+  "مدة الحلقة تتجاوز رصيد الدقائق المتبقي.": {
+    en: "The episode is longer than your remaining minutes.",
+    fr: "L'épisode dépasse vos minutes restantes.",
+  },
+  "أدخل رابطاً صالحاً يبدأ بـ https://": {
+    en: "Enter a valid link starting with https://",
+    fr: "Saisissez un lien valide commençant par https://",
+  },
+  "حلقة بدون عنوان": { en: "Untitled episode", fr: "Épisode sans titre" },
+
+  // Episode detail
+  "رجوع إلى الحلقات": { en: "Back to episodes", fr: "Retour aux épisodes" },
+  "تصدير": { en: "Export", fr: "Exporter" },
+  "لا يوجد نص بعد. شغّل التفريغ من صفحة الحلقات.": {
+    en: "No transcript yet. Start transcription from the episodes page.",
+    fr: "Pas encore de transcription. Lancez-la depuis la page des épisodes.",
+  },
 };
 
 export function translate(text: string, lang: Lang): string {
