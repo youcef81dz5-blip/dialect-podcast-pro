@@ -62,6 +62,11 @@ const features = [
     title: "تصدير فوري",
     body: "ملفات SRT وVTT وTXT، بالعربية أو الإنجليزية أو ثنائية اللغة.",
   },
+  {
+    icon: Sparkles,
+    title: "من اللهجة إلى الفصحى",
+    body: "حوّل محتواك بالدارجة إلى عربية فصحى واضحة، وانشره لجمهور أوسع يفهمك في كل البلدان.",
+  },
 ];
 
 const capabilities = [
@@ -71,6 +76,7 @@ const capabilities = [
   { icon: Globe, text: "ترجمة إنجليزية مطابقة للتوقيت الزمني" },
   { icon: FileText, text: "تصدير SRT / VTT / TXT بالعربية أو الإنجليزية أو الاثنين" },
   { icon: Check, text: "معالجة على دفعات لضمان اكتمال الحلقات الطويلة" },
+  { icon: Sparkles, text: "إضافة كتابة فصحى تحت الفيديو لتوسيع انتشار المحتوى" },
 ];
 
 const steps = [
@@ -189,6 +195,37 @@ function Landing() {
           </button>
         </section>
 
+        {/* Marketing hook */}
+        <section className="mx-auto max-w-6xl px-6 pb-20">
+          <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 text-center md:p-12">
+            <div className="absolute -left-10 -top-10 size-40 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute -bottom-10 -right-10 size-40 rounded-full bg-accent/10 blur-3xl" />
+            <div className="relative">
+              <h2 className="text-balance text-2xl font-bold leading-snug md:text-4xl">
+                محتواك بالدارجة؟ أوصله لكل العرب
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-pretty text-sm text-muted-foreground md:text-base">
+                لا يفهمك جمهور خارج بلدك؟ حوّل لهجتك إلى العربية الفصحى وأضفها ككتابة تحت
+                فيديوهاتك، وانشر محتواك في كل العالم.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 text-xs font-medium text-primary">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                  <Globe className="size-3.5" />
+                  انتشار أوسع
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                  <Languages className="size-3.5" />
+                  فصحى واضحة
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                  <FileText className="size-3.5" />
+                  جاهزة للنشر
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Problem + Solution */}
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <div className="grid gap-6 md:grid-cols-2">
@@ -202,15 +239,15 @@ function Landing() {
             <div className="rounded-2xl border bg-card p-6 text-right">
               <h2 className="text-lg font-semibold text-primary">الحل مع صدى</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                نموذج مخصّص للعربية واللهجات يفرّغ الحلقة كاملة، ثم يُحسّن النص ويترجمه ويحوّله
-                للفصحى، لتنشر المحتوى بلهجتك الأصلية أو بلغة عالمية واضحة.
+                نموذج مخصّص للعربية واللهجات يفرّغ الحلقة كاملة، ثم يحوّلها إلى فصحى مقروءة
+                تُضاف ككتابة تحت الفيديو، فتصل لجمهور أوسع في كل البلدان العربية.
               </p>
             </div>
           </div>
         </section>
 
         {/* Features */}
-        <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-24 md:grid-cols-3">
+        <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-24 md:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <div key={f.title} className="rounded-2xl border bg-card p-6 text-right">
               <f.icon className="size-6 text-accent" />
