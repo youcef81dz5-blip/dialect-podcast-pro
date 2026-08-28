@@ -91,17 +91,31 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
 
 
       if (tab === "upload") {
-        if (!file) throw new Error(t("اختر ملفاً صوتياً أولاً."));
+        if (!file) throw new Error(t("اختر ملفاً صوتياً أو فيديو أولاً."));
         if (file.size > MAX_BYTES) throw new Error(t("حجم الملف يتجاوز 200 ميجابايت."));
-        duration = await readDuration(file);
+
+        let payload: Blob = file;
+        let contentType = file.type || "audio/mpeg";
+        let ext = file.name.split(".").pop() ?? "mp3";
+
+        if (isVideoFile(file)) {
+          setStage(t("جارٍ استخراج الصوت من الفيديو…"));
+          const extracted = await extractAudioFromVideo(file);
+          payload = extracted.blob;
+          contentType = "audio/wav";
+          ext = "wav";
+          duration = extracted.durationSeconds;
+        } else {
+          duration = await readDuration(file);
+        }
         if (duration && duration / 60 > minutesLeft) {
           throw new Error(t("مدة الحلقة تتجاوز رصيد الدقائق المتبقي."));
         }
-        const ext = file.name.split(".").pop() ?? "mp3";
+        setStage(t("جارٍ الرفع…"));
         storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from("episode-audio")
-          .upload(storagePath, file, { contentType: file.type || "audio/mpeg" });
+          .upload(storagePath, payload, { contentType });
         if (uploadError) throw uploadError;
       } else {
         const trimmed = url.trim();
