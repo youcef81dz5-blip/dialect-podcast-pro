@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { transcribeEpisode } from "@/lib/transcription.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 
 const STATUS_LABEL: Record<string, { label: string; variant: "secondary" | "default" | "destructive" | "outline" }> = {
   queued: { label: "في الانتظار", variant: "secondary" },
@@ -33,6 +34,7 @@ function formatDuration(seconds: number | null) {
 
 export function EpisodeList() {
   const { user } = useAuth();
+  const t = useT();
   const queryClient = useQueryClient();
 
   const { data: episodes, isLoading } = useQuery({
@@ -58,7 +60,7 @@ export function EpisodeList() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حذف الحلقة.");
+      toast.success(t("تم حذف الحلقة."));
       void queryClient.invalidateQueries({ queryKey: ["episodes"] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -67,9 +69,9 @@ export function EpisodeList() {
   const runTranscription = useServerFn(transcribeEpisode);
   const transcribe = useMutation({
     mutationFn: async (episodeId: string) => runTranscription({ data: { episodeId } }),
-    onMutate: () => toast.info("بدأ التفريغ الكامل؛ تُعالج الحلقات الطويلة على عدة أجزاء."),
+    onMutate: () => toast.info(t("بدأ التفريغ الكامل؛ تُعالج الحلقات الطويلة على عدة أجزاء.")),
     onSuccess: () => {
-      toast.success("اكتمل التفريغ.");
+      toast.success(t("اكتمل التفريغ."));
       void queryClient.invalidateQueries({ queryKey: ["episodes"] });
     },
     onError: (error: Error) => {
@@ -82,7 +84,7 @@ export function EpisodeList() {
     return (
       <div className="flex items-center justify-center rounded-2xl border p-12 text-sm text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
-        <span className="ms-2">جارٍ تحميل الحلقات…</span>
+        <span className="ms-2">{t("جارٍ تحميل الحلقات…")}</span>
       </div>
     );
   }
@@ -91,9 +93,9 @@ export function EpisodeList() {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-card/40 p-12 text-center">
         <Upload className="size-8 text-muted-foreground" />
-        <h2 className="mt-4 text-lg font-semibold">لا توجد حلقات بعد</h2>
+        <h2 className="mt-4 text-lg font-semibold">{t("لا توجد حلقات بعد")}</h2>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-          ارفع ملفاً صوتياً أو الصق رابط حلقة لتضاف إلى قائمة الانتظار.
+          {t("ارفع ملفاً صوتياً أو الصق رابط حلقة لتضاف إلى قائمة الانتظار.")}
         </p>
       </div>
     );
@@ -112,21 +114,21 @@ export function EpisodeList() {
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">{episode.title}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {DIALECT_LABEL[episode.dialect] ?? episode.dialect} ·{" "}
+                {t(DIALECT_LABEL[episode.dialect] ?? episode.dialect)} ·{" "}
                 {formatDuration(episode.duration_seconds)} ·{" "}
-                {episode.source_type === "upload" ? "ملف مرفوع" : "رابط"}
+                {episode.source_type === "upload" ? t("ملف مرفوع") : t("رابط")}
               </p>
               {episode.error_message && (
                 <p className="mt-1 text-xs text-destructive">{episode.error_message}</p>
               )}
             </div>
-            <Badge variant={status.variant}>{status.label}</Badge>
+            <Badge variant={status.variant}>{t(status.label)}</Badge>
             {episode.status === "ready" ? (
               <>
                 <Button asChild variant="secondary" size="sm">
                   <Link to="/episodes/$id" params={{ id: episode.id }}>
                     <FileText className="size-4" />
-                    النص
+                    {t("النص")}
                   </Link>
                 </Button>
                 <Button
@@ -140,7 +142,7 @@ export function EpisodeList() {
                   ) : (
                     <Sparkles className="size-4" />
                   )}
-                  إعادة التفريغ
+                  {t("إعادة التفريغ")}
                 </Button>
               </>
             ) : (
@@ -158,13 +160,13 @@ export function EpisodeList() {
                 ) : (
                   <Sparkles className="size-4" />
                 )}
-                تفريغ
+                {t("تفريغ")}
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
-              aria-label="حذف الحلقة"
+              aria-label={t("حذف الحلقة")}
               disabled={remove.isPending}
               onClick={() =>
                 remove.mutate({ id: episode.id, storage_path: episode.storage_path })

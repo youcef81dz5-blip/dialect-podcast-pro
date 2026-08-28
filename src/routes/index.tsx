@@ -24,6 +24,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -114,6 +116,7 @@ const steps = [
 
 function Landing() {
   const { user, loading } = useAuth();
+  const t = useT();
 
   const scrollToHowItWorks = () => {
     document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
@@ -124,14 +127,15 @@ function Landing() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
           <AudioLines className="size-6 text-primary" />
-          <span className="text-lg font-bold">صدى</span>
+          <span className="text-lg font-bold">{t("صدى")}</span>
         </div>
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <Button asChild variant="ghost" size="sm">
-            <Link to="/pricing">الأسعار</Link>
+            <Link to="/pricing">{t("الأسعار")}</Link>
           </Button>
           <Button asChild variant={user ? "default" : "outline"} size="sm" disabled={loading}>
-            <Link to={user ? "/app" : "/auth"}>{user ? "لوحة التحكم" : "تسجيل الدخول"}</Link>
+            <Link to={user ? "/app" : "/auth"}>{user ? t("لوحة التحكم") : t("تسجيل الدخول")}</Link>
           </Button>
         </div>
       </header>
@@ -140,31 +144,30 @@ function Landing() {
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-6 pb-16 pt-12 text-center">
           <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-xs font-medium text-primary">
-            لصنّاع المحتوى العربي
+            {t("لصنّاع المحتوى العربي")}
           </span>
           <h1 className="mt-6 text-balance text-4xl font-bold leading-tight md:text-6xl">
-            حلقتك الصوتية تتحول إلى نص وترجمة في دقائق
+            {t("حلقتك الصوتية تتحول إلى نص وترجمة في دقائق")}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground md:text-lg">
-            ارفع ملفاً صوتياً أو رابط حلقة، واحصل على تفريغ عربي منقّح يراعي اللهجة، وترجمة
-            إنجليزية، وملفات ترجمة جاهزة للنشر.
+            {t("ارفع ملفاً صوتياً أو رابط حلقة، واحصل على تفريغ عربي منقّح يراعي اللهجة، وترجمة إنجليزية، وملفات ترجمة جاهزة للنشر.")}
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg">
-              <Link to={user ? "/app" : "/auth"}>ابدأ مجاناً — 30 دقيقة شهرياً</Link>
+              <Link to={user ? "/app" : "/auth"}>{t("ابدأ مجاناً — 30 دقيقة شهرياً")}</Link>
             </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" size="lg">
-                  اكتشف كل ما يفعله
+                  {t("اكتشف كل ما يفعله")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-xl" dir="rtl">
                 <DialogHeader>
-                  <DialogTitle className="text-right">كل ما يفعله صدى</DialogTitle>
+                  <DialogTitle className="text-right">{t("كل ما يفعله صدى")}</DialogTitle>
                   <DialogDescription className="text-right">
-                    أداة واحدة لتفريغ وترجمة وتنقيح البودكاست العربي.
+                    {t("أداة واحدة لتفريغ وترجمة وتنقيح البودكاست العربي.")}
                   </DialogDescription>
                 </DialogHeader>
                 <ul className="mt-2 space-y-3">
@@ -173,13 +176,13 @@ function Landing() {
                       <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                         <cap.icon className="size-4 text-primary" />
                       </div>
-                      <span className="pt-0.5 text-sm leading-relaxed">{cap.text}</span>
+                      <span className="pt-0.5 text-sm leading-relaxed">{t(cap.text)}</span>
                     </li>
                   ))}
                 </ul>
                 <div className="mt-4 flex justify-start">
                   <Button asChild>
-                    <Link to={user ? "/app" : "/auth"}>جربه الآن مجاناً</Link>
+                    <Link to={user ? "/app" : "/auth"}>{t("جربه الآن مجاناً")}</Link>
                   </Button>
                 </div>
               </DialogContent>
@@ -190,7 +193,7 @@ function Landing() {
             onClick={scrollToHowItWorks}
             className="mx-auto mt-12 flex flex-col items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
-            <span>كيف يعمل؟</span>
+            <span>{t("كيف يعمل؟")}</span>
             <ArrowDown className="size-4 animate-bounce" />
           </button>
         </section>
@@ -202,24 +205,23 @@ function Landing() {
             <div className="absolute -bottom-10 -right-10 size-40 rounded-full bg-accent/10 blur-3xl" />
             <div className="relative">
               <h2 className="text-balance text-2xl font-bold leading-snug md:text-4xl">
-                محتواك بالدارجة؟ أوصله لكل العرب
+                {t("محتواك بالدارجة؟ أوصله لكل العرب")}
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-pretty text-sm text-muted-foreground md:text-base">
-                لا يفهمك جمهور خارج بلدك؟ حوّل لهجتك إلى العربية الفصحى وأضفها ككتابة تحت
-                فيديوهاتك، وانشر محتواك في كل العالم.
+                {t("لا يفهمك جمهور خارج بلدك؟ حوّل لهجتك إلى العربية الفصحى وأضفها ككتابة تحت فيديوهاتك، وانشر محتواك في كل العالم.")}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3 text-xs font-medium text-primary">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
                   <Globe className="size-3.5" />
-                  انتشار أوسع
+                  {t("انتشار أوسع")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
                   <Languages className="size-3.5" />
-                  فصحى واضحة
+                  {t("فصحى واضحة")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
                   <FileText className="size-3.5" />
-                  جاهزة للنشر
+                  {t("جاهزة للنشر")}
                 </span>
               </div>
             </div>
@@ -230,17 +232,15 @@ function Landing() {
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-2xl border bg-card/50 p-6 text-right">
-              <h2 className="text-lg font-semibold text-destructive">المشكلة</h2>
+              <h2 className="text-lg font-semibold text-destructive">{t("المشكلة")}</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                أدوات التفريغ العالمية ضعيفة بالعربية، وغالباً ما تُضيّع اللهجة أو تُخرج نصاً غير
-                مقروء. صانع المحتوى العربي يضطر لقضاء ساعات في التصحيح اليدوي.
+                {t("أدوات التفريغ العالمية ضعيفة بالعربية، وغالباً ما تُضيّع اللهجة أو تُخرج نصاً غير مقروء. صانع المحتوى العربي يضطر لقضاء ساعات في التصحيح اليدوي.")}
               </p>
             </div>
             <div className="rounded-2xl border bg-card p-6 text-right">
-              <h2 className="text-lg font-semibold text-primary">الحل مع صدى</h2>
+              <h2 className="text-lg font-semibold text-primary">{t("الحل مع صدى")}</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                نموذج مخصّص للعربية واللهجات يفرّغ الحلقة كاملة، ثم يحوّلها إلى فصحى مقروءة
-                تُضاف ككتابة تحت الفيديو، فتصل لجمهور أوسع في كل البلدان العربية.
+                {t("نموذج مخصّص للعربية واللهجات يفرّغ الحلقة كاملة، ثم يحوّلها إلى فصحى مقروءة تُضاف ككتابة تحت الفيديو، فتصل لجمهور أوسع في كل البلدان العربية.")}
               </p>
             </div>
           </div>
@@ -251,8 +251,8 @@ function Landing() {
           {features.map((f) => (
             <div key={f.title} className="rounded-2xl border bg-card p-6 text-right">
               <f.icon className="size-6 text-accent" />
-              <h2 className="mt-4 text-lg font-semibold">{f.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+              <h2 className="mt-4 text-lg font-semibold">{t(f.title)}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(f.body)}</p>
             </div>
           ))}
         </section>
@@ -261,9 +261,9 @@ function Landing() {
         <section id="how-it-works" className="scroll-mt-20 bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-6">
             <div className="mb-12 text-center">
-              <h2 className="text-3xl font-bold">كيف يعمل صدى؟</h2>
+              <h2 className="text-3xl font-bold">{t("كيف يعمل صدى؟")}</h2>
               <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-                خطوات بسيطة من الرفع إلى التصدير، مع معالجة ذكية تضمن جودة النص.
+                {t("خطوات بسيطة من الرفع إلى التصدير، مع معالجة ذكية تضمن جودة النص.")}
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-5">
@@ -276,8 +276,8 @@ function Landing() {
                     {step.number}
                   </span>
                   <step.icon className="mt-2 size-6 text-accent" />
-                  <h3 className="mt-4 text-sm font-semibold">{step.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{step.body}</p>
+                  <h3 className="mt-4 text-sm font-semibold">{t(step.title)}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{t(step.body)}</p>
                 </div>
               ))}
             </div>
@@ -286,12 +286,12 @@ function Landing() {
 
         {/* CTA */}
         <section className="mx-auto max-w-4xl px-6 py-20 text-center">
-          <h2 className="text-2xl font-bold md:text-3xl">جاهز لتوفير وقت التفريغ والترجمة؟</h2>
+          <h2 className="text-2xl font-bold md:text-3xl">{t("جاهز لتوفير وقت التفريغ والترجمة؟")}</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-            ابدأ بـ 30 دقيقة مجانية كل شهر، واكتشف كيف يُحوّل صدى حلقاتك إلى محتوى منشور.
+            {t("ابدأ بـ 30 دقيقة مجانية كل شهر، واكتشف كيف يُحوّل صدى حلقاتك إلى محتوى منشور.")}
           </p>
           <Button asChild size="lg" className="mt-8">
-            <Link to={user ? "/app" : "/auth"}>ابدأ مجاناً</Link>
+            <Link to={user ? "/app" : "/auth"}>{t("ابدأ مجاناً")}</Link>
           </Button>
         </section>
       </main>
@@ -299,12 +299,12 @@ function Landing() {
       <footer className="border-t py-8 text-sm text-muted-foreground">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <span>صدى — أداة تفريغ وترجمة البودكاست العربي</span>
+            <span>{t("صدى — أداة تفريغ وترجمة البودكاست العربي")}</span>
             <Link to="/pricing" className="hover:text-foreground">
-              الأسعار
+              {t("الأسعار")}
             </Link>
             <Link to="/privacy" className="hover:text-foreground">
-              سياسة الخصوصية
+              {t("سياسة الخصوصية")}
             </Link>
           </div>
 
@@ -320,7 +320,7 @@ function Landing() {
               className="size-10 rounded-full object-cover"
             />
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">تطوير وتشغيل</p>
+              <p className="text-xs text-muted-foreground">{t("تطوير وتشغيل")}</p>
               <p className="font-semibold text-foreground">Youcef Info</p>
               <p className="flex items-center gap-1 text-xs text-primary">
                 <Phone className="size-3" />

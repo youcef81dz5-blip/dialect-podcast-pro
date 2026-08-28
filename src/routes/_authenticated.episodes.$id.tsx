@@ -8,6 +8,7 @@ import { translateEpisode } from "@/lib/translation.functions";
 import { convertEpisodeToMsa } from "@/lib/msa.functions";
 import { downloadText, safeFileName, toSrt, toTxt, toVtt, type SubtitleCue } from "@/lib/subtitles";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ function formatTime(ms: number) {
 
 function EpisodeTranscript() {
   const { id } = Route.useParams();
+  const t = useT();
   const queryClient = useQueryClient();
   const runTranslate = useServerFn(translateEpisode);
   const runMsa = useServerFn(convertEpisodeToMsa);
@@ -116,7 +118,7 @@ function EpisodeTranscript() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم حفظ التعديل.");
+      toast.success(t("تم حفظ التعديل."));
       void queryClient.invalidateQueries({ queryKey: ["episode-transcript", id] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -125,7 +127,7 @@ function EpisodeTranscript() {
   const translate = useMutation({
     mutationFn: () => runTranslate({ data: { episodeId: id } }),
     onSuccess: () => {
-      toast.success("تمت الترجمة إلى الإنجليزية.");
+      toast.success(t("تمت الترجمة إلى الإنجليزية."));
       void queryClient.invalidateQueries({ queryKey: ["episode-transcript", id] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -133,9 +135,9 @@ function EpisodeTranscript() {
 
   const toMsa = useMutation({
     mutationFn: () => runMsa({ data: { episodeId: id } }),
-    onMutate: () => toast.info("جارٍ التحويل إلى الفصحى…"),
+    onMutate: () => toast.info(t("جارٍ التحويل إلى الفصحى…")),
     onSuccess: () => {
-      toast.success("تم تحويل النص إلى الفصحى.");
+      toast.success(t("تم تحويل النص إلى الفصحى."));
       void queryClient.invalidateQueries({ queryKey: ["episode-transcript", id] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -145,7 +147,7 @@ function EpisodeTranscript() {
     return (
       <main className="mx-auto flex max-w-3xl items-center justify-center px-6 py-20 text-sm text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
-        <span className="ms-2">جارٍ التحميل…</span>
+        <span className="ms-2">{t("جارٍ التحميل…")}</span>
       </main>
     );
   }
@@ -191,12 +193,12 @@ function EpisodeTranscript() {
       <Button asChild variant="ghost" size="sm">
         <Link to="/app">
           <ArrowRight className="size-4" />
-          رجوع إلى الحلقات
+          {t("رجوع إلى الحلقات")}
         </Link>
       </Button>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">{episode?.title ?? "حلقة"}</h1>
+        <h1 className="text-2xl font-bold">{episode?.title ?? t("حلقة")}</h1>
         {segments.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <Button
@@ -209,7 +211,7 @@ function EpisodeTranscript() {
               ) : (
                 <Languages className="size-4" />
               )}
-              {hasTranslation ? "إعادة الترجمة" : "ترجمة إنجليزية"}
+              {hasTranslation ? t("إعادة الترجمة") : t("ترجمة إنجليزية")}
             </Button>
 
             {isDialect && (
@@ -223,7 +225,7 @@ function EpisodeTranscript() {
                 ) : (
                   <WandSparkles className="size-4" />
                 )}
-                {hasMsa ? "إعادة التفصيح" : "تحويل إلى الفصحى"}
+                {hasMsa ? t("إعادة التفصيح") : t("تحويل إلى الفصحى")}
               </Button>
             )}
 
@@ -232,36 +234,36 @@ function EpisodeTranscript() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <Download className="size-4" />
-                  تصدير
+                  {t("تصدير")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>العربية</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => exportFile("srt", "ar")}>SRT عربي</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => exportFile("vtt", "ar")}>VTT عربي</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => exportFile("txt", "ar")}>TXT عربي</DropdownMenuItem>
+                <DropdownMenuLabel>{t("العربية")}</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => exportFile("srt", "ar")}>{t("SRT عربي")}</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => exportFile("vtt", "ar")}>{t("VTT عربي")}</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => exportFile("txt", "ar")}>{t("TXT عربي")}</DropdownMenuItem>
                 {hasMsa && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel>الفصحى</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => exportFile("srt", "msa")}>SRT فصحى</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => exportFile("vtt", "msa")}>VTT فصحى</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => exportFile("txt", "msa")}>TXT فصحى</DropdownMenuItem>
+                    <DropdownMenuLabel>{t("الفصحى")}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => exportFile("srt", "msa")}>{t("SRT فصحى")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("vtt", "msa")}>{t("VTT فصحى")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("txt", "msa")}>{t("TXT فصحى")}</DropdownMenuItem>
                   </>
                 )}
 
                 {hasTranslation && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel>الإنجليزية</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => exportFile("srt", "en")}>SRT إنجليزي</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => exportFile("vtt", "en")}>VTT إنجليزي</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => exportFile("txt", "en")}>TXT إنجليزي</DropdownMenuItem>
+                    <DropdownMenuLabel>{t("الإنجليزية")}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => exportFile("srt", "en")}>{t("SRT إنجليزي")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("vtt", "en")}>{t("VTT إنجليزي")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("txt", "en")}>{t("TXT إنجليزي")}</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel>ثنائي اللغة</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => exportFile("srt", "both")}>SRT ثنائي</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => exportFile("vtt", "both")}>VTT ثنائي</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => exportFile("txt", "both")}>TXT ثنائي</DropdownMenuItem>
+                    <DropdownMenuLabel>{t("ثنائي اللغة")}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => exportFile("srt", "both")}>{t("SRT ثنائي")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("vtt", "both")}>{t("VTT ثنائي")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => exportFile("txt", "both")}>{t("TXT ثنائي")}</DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>
@@ -276,7 +278,7 @@ function EpisodeTranscript() {
 
       {segments.length === 0 ? (
         <p className="mt-10 rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">
-          لا يوجد نص بعد. شغّل التفريغ من صفحة الحلقات.
+          {t("لا يوجد نص بعد. شغّل التفريغ من صفحة الحلقات.")}
         </p>
       ) : (
         <ul className="mt-8 space-y-3">
@@ -300,7 +302,7 @@ function EpisodeTranscript() {
                 >
                   <div className="space-y-1">
                     {columns > 1 && (
-                      <span className="text-[11px] text-muted-foreground">اللهجة</span>
+                      <span className="text-[11px] text-muted-foreground">{t("اللهجة")}</span>
                     )}
                     <Textarea
                       className="min-h-16 resize-y"
@@ -315,7 +317,7 @@ function EpisodeTranscript() {
                   </div>
                   {fusha && (
                     <div className="space-y-1">
-                      <span className="text-[11px] text-muted-foreground">الفصحى</span>
+                      <span className="text-[11px] text-muted-foreground">{t("الفصحى")}</span>
                       <Textarea
                         className="min-h-16 resize-y"
                         defaultValue={fusha.text}
