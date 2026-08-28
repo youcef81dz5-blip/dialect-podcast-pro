@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveMediaUrl } from "@/lib/media-resolve.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { useT } from "@/lib/i18n";
+import { extractAudioFromVideo, isVideoFile } from "@/lib/extract-audio";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [tab, setTab] = useState<"upload" | "url">("upload");
+  const [stage, setStage] = useState<string | null>(null);
 
   const reset = () => {
     setTitle("");
@@ -76,6 +78,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
     setUrl("");
     setDialect("msa");
     setTab("upload");
+    setStage(null);
   };
 
   const mutation = useMutation({
@@ -91,17 +94,31 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
 
 
       if (tab === "upload") {
-        if (!file) throw new Error(t("اختر ملفاً صوتياً أولاً."));
+        if (!file) throw new Error(t("اختر ملفاً صوتياً أو فيديو أولاً."));
         if (file.size > MAX_BYTES) throw new Error(t("حجم الملف يتجاوز 200 ميجابايت."));
-        duration = await readDuration(file);
+
+        let payload: Blob = file;
+        let contentType = file.type || "audio/mpeg";
+        let ext = file.name.split(".").pop() ?? "mp3";
+
+        if (isVideoFile(file)) {
+          setStage(t("جارٍ استخراج الصوت من الفيديو…"));
+          const extracted = await extractAudioFromVideo(file);
+          payload = extracted.blob;
+          contentType = "audio/wav";
+          ext = "wav";
+          duration = extracted.durationSeconds;
+        } else {
+          duration = await readDuration(file);
+        }
         if (duration && duration / 60 > minutesLeft) {
           throw new Error(t("مدة الحلقة تتجاوز رصيد الدقائق المتبقي."));
         }
-        const ext = file.name.split(".").pop() ?? "mp3";
+        setStage(t("جارٍ الرفع…"));
         storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from("episode-audio")
-          .upload(storagePath, file, { contentType: file.type || "audio/mpeg" });
+          .upload(storagePath, payload, { contentType });
         if (uploadError) throw uploadError;
       } else {
         const trimmed = url.trim();
@@ -136,6 +153,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
       if (error) throw error;
       return episode;
     },
+    onSettled: () => setStage(null),
     onSuccess: () => {
       toast.success(t("تمت إضافة الحلقة إلى قائمة الانتظار."));
       void queryClient.invalidateQueries({ queryKey: ["episodes"] });
@@ -172,7 +190,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="upload">
               <Upload className="size-4" />
-              {t("ملف صوتي")}
+              {t("ملف صوتي أو فيديو")}
             </TabsTrigger>
             <TabsTrigger value="url">
               <Link2 className="size-4" />
@@ -180,11 +198,11 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="upload" className="pt-4">
-            <Label htmlFor="audio-file">{t("الملف الصوتي")}</Label>
+            <Label htmlFor="audio-file">{t("ملف صوتي أو فيديو")}</Label>
             <Input
               id="audio-file"
               type="file"
-              accept="audio/*,.mp3,.m4a,.wav"
+              accept="audio/*,video/*,.mp3,.m4a,.wav,.mp4,.mov,.mkv,.webm"
               className="mt-2"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
@@ -244,7 +262,7 @@ export function UploadEpisodeDialog({ minutesLeft }: { minutesLeft: number }) {
           onClick={() => mutation.mutate()}
         >
           {mutation.isPending && <Loader2 className="size-4 animate-spin" />}
-          {mutation.isPending ? t("جارٍ الرفع…") : t("إضافة الحلقة")}
+          {mutation.isPending ? (stage ?? t("جارٍ الرفع…")) : t("إضافة الحلقة")}
         </Button>
       </DialogContent>
     </Dialog>
