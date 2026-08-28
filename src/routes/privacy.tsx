@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AudioLines } from "lucide-react";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -50,38 +52,42 @@ const sections = [
 ];
 
 function Privacy() {
+  const t = useT();
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
             <AudioLines className="size-5 text-primary" />
-            صدى
+            {t("صدى")}
           </Link>
-          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
-            الأسعار
-          </Link>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
+              {t("الأسعار")}
+            </Link>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-14 text-right">
-        <h1 className="text-3xl font-bold">سياسة الخصوصية</h1>
+        <h1 className="text-3xl font-bold">{t("سياسة الخصوصية")}</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          نشرح هنا بوضوح ما نفعله ببياناتك الصوتية والنصية.
+          {t("نشرح هنا بوضوح ما نفعله ببياناتك الصوتية والنصية.")}
         </p>
 
         <div className="mt-10 space-y-8">
           {sections.map((s) => (
             <section key={s.title}>
-              <h2 className="text-lg font-semibold">{s.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+              <h2 className="text-lg font-semibold">{t(s.title)}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(s.body)}</p>
             </section>
           ))}
         </div>
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        صدى — أداة تفريغ وترجمة البودكاست العربي
+        {t("صدى — أداة تفريغ وترجمة البودكاست العربي")}
       </footer>
     </div>
   );

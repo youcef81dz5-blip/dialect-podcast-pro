@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -62,7 +65,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("تم إنشاء الحساب. تحقق من بريدك إن طُلب التأكيد.");
+    toast.success(t("تم إنشاء الحساب. تحقق من بريدك إن طُلب التأكيد."));
     void navigate({ to: "/app" });
   }
 
@@ -73,7 +76,7 @@ function AuthPage() {
     });
     if (result.error) {
       setBusy(false);
-      toast.error("تعذّر تسجيل الدخول عبر Google");
+      toast.error(t("تعذّر تسجيل الدخول عبر Google"));
       return;
     }
     if (result.redirected) return;
@@ -84,22 +87,25 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher />
+        </div>
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
           <AudioLines className="size-6 text-primary" />
-          <span className="text-lg font-bold">صدى</span>
+          <span className="text-lg font-bold">{t("صدى")}</span>
         </Link>
 
         <div className="rounded-2xl border bg-card p-6">
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">دخول</TabsTrigger>
-              <TabsTrigger value="signup">حساب جديد</TabsTrigger>
+              <TabsTrigger value="signin">{t("دخول")}</TabsTrigger>
+              <TabsTrigger value="signup">{t("حساب جديد")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
               <form onSubmit={signIn} className="mt-4 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">البريد الإلكتروني</Label>
+                  <Label htmlFor="email">{t("البريد الإلكتروني")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -110,7 +116,7 @@ function AuthPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">كلمة المرور</Label>
+                  <Label htmlFor="password">{t("كلمة المرور")}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -121,7 +127,7 @@ function AuthPage() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
-                  دخول
+                  {t("دخول")}
                 </Button>
               </form>
             </TabsContent>
@@ -129,11 +135,11 @@ function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={signUp} className="mt-4 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">الاسم</Label>
+                  <Label htmlFor="name">{t("الاسم")}</Label>
                   <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email2">البريد الإلكتروني</Label>
+                  <Label htmlFor="email2">{t("البريد الإلكتروني")}</Label>
                   <Input
                     id="email2"
                     type="email"
@@ -144,7 +150,7 @@ function AuthPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password2">كلمة المرور</Label>
+                  <Label htmlFor="password2">{t("كلمة المرور")}</Label>
                   <Input
                     id="password2"
                     type="password"
@@ -156,7 +162,7 @@ function AuthPage() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
-                  إنشاء الحساب
+                  {t("إنشاء الحساب")}
                 </Button>
               </form>
             </TabsContent>
@@ -164,12 +170,12 @@ function AuthPage() {
 
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="h-px flex-1 bg-border" />
-            أو
+            {t("أو")}
             <span className="h-px flex-1 bg-border" />
           </div>
 
           <Button variant="outline" className="w-full" onClick={google} disabled={busy}>
-            المتابعة عبر Google
+            {t("المتابعة عبر Google")}
           </Button>
         </div>
       </div>
