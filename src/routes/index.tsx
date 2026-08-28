@@ -247,7 +247,7 @@ function Landing() {
         </section>
 
         {/* Features */}
-        <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-24 md:grid-cols-3">
+        <section className="mx-auto grid max-w-6xl gap-4 px-6 pb-24 md:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <div key={f.title} className="rounded-2xl border bg-card p-6 text-right">
               <f.icon className="size-6 text-accent" />
