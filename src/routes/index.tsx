@@ -195,6 +195,37 @@ function Landing() {
           </button>
         </section>
 
+        {/* Marketing hook */}
+        <section className="mx-auto max-w-6xl px-6 pb-20">
+          <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 text-center md:p-12">
+            <div className="absolute -left-10 -top-10 size-40 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute -bottom-10 -right-10 size-40 rounded-full bg-accent/10 blur-3xl" />
+            <div className="relative">
+              <h2 className="text-balance text-2xl font-bold leading-snug md:text-4xl">
+                محتواك بالدارجة؟ أوصله لكل العرب
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-pretty text-sm text-muted-foreground md:text-base">
+                لا يفهمك جمهور خارج بلدك؟ حوّل لهجتك إلى العربية الفصحى وأضفها ككتابة تحت
+                فيديوهاتك، وانشر محتواك في كل العالم.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 text-xs font-medium text-primary">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                  <Globe className="size-3.5" />
+                  انتشار أوسع
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                  <Languages className="size-3.5" />
+                  فصحى واضحة
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                  <FileText className="size-3.5" />
+                  جاهزة للنشر
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Problem + Solution */}
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <div className="grid gap-6 md:grid-cols-2">
