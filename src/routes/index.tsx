@@ -239,8 +239,8 @@ function Landing() {
             <div className="rounded-2xl border bg-card p-6 text-right">
               <h2 className="text-lg font-semibold text-primary">الحل مع صدى</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                نموذج مخصّص للعربية واللهجات يفرّغ الحلقة كاملة، ثم يُحسّن النص ويترجمه ويحوّله
-                للفصحى، لتنشر المحتوى بلهجتك الأصلية أو بلغة عالمية واضحة.
+                نموذج مخصّص للعربية واللهجات يفرّغ الحلقة كاملة، ثم يحوّلها إلى فصحى مقروءة
+                تُضاف ككتابة تحت الفيديو، فتصل لجمهور أوسع في كل البلدان العربية.
               </p>
             </div>
           </div>
