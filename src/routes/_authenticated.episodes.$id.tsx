@@ -147,7 +147,7 @@ function EpisodeTranscript() {
     return (
       <main className="mx-auto flex max-w-3xl items-center justify-center px-6 py-20 text-sm text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
-        <span className="ms-2">جارٍ التحميل…</span>
+        <span className="ms-2">{t("جارٍ التحميل…")}</span>
       </main>
     );
   }

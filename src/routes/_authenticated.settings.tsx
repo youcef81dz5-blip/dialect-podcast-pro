@@ -9,6 +9,8 @@ import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -29,6 +31,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function Settings() {
   const { user } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
   const runExport = useServerFn(exportMyData);
   const runDelete = useServerFn(deleteMyAccount);
@@ -47,9 +50,9 @@ function Settings() {
       a.download = "sada-account-data.json";
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("تم تصدير بياناتك");
+      toast.success(t("تم تصدير بياناتك"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "تعذّر التصدير");
+      toast.error(e instanceof Error ? e.message : t("تعذّر التصدير"));
     } finally {
       setExporting(false);
     }
@@ -60,10 +63,10 @@ function Settings() {
     try {
       await runDelete();
       await supabase.auth.signOut();
-      toast.success("تم حذف الحساب");
+      toast.success(t("تم حذف الحساب"));
       navigate({ to: "/" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "تعذّر حذف الحساب");
+      toast.error(e instanceof Error ? e.message : t("تعذّر حذف الحساب"));
       setDeleting(false);
     }
   }
@@ -75,55 +78,58 @@ function Settings() {
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowRight className="size-4" />
-        العودة للوحة
+        {t("العودة للوحة")}
       </Link>
+      <div className="mt-4 flex justify-end">
+        <LanguageSwitcher />
+      </div>
 
-      <h1 className="mt-4 text-2xl font-bold">إعدادات الحساب</h1>
+      <h1 className="mt-4 text-2xl font-bold">{t("إعدادات الحساب")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{user?.email}</p>
 
       <section className="mt-8 rounded-2xl border bg-card p-6">
-        <h2 className="text-lg font-semibold">تصدير بياناتي</h2>
+        <h2 className="text-lg font-semibold">{t("تصدير بياناتي")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          ملف JSON يحتوي حلقاتك، النصوص، الترجمات، وبيانات اشتراكك.
+          {t("ملف JSON يحتوي حلقاتك، النصوص، الترجمات، وبيانات اشتراكك.")}
         </p>
         <Button className="mt-4" onClick={handleExport} disabled={exporting}>
           {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-          تصدير JSON
+          {t("تصدير JSON")}
         </Button>
       </section>
 
       <section className="mt-6 rounded-2xl border border-destructive/40 bg-card p-6">
-        <h2 className="text-lg font-semibold text-destructive">حذف الحساب</h2>
+        <h2 className="text-lg font-semibold text-destructive">{t("حذف الحساب")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          سيُحذف حسابك مع كل الملفات الصوتية والنصوص والترجمات نهائياً. لا يمكن التراجع.
+          {t("سيُحذف حسابك مع كل الملفات الصوتية والنصوص والترجمات نهائياً. لا يمكن التراجع.")}
         </p>
         <div className="mt-4 max-w-xs">
           <Label htmlFor="confirm" className="text-sm">
-            اكتب «حذف» للتأكيد
+            {t("اكتب «حذف» للتأكيد")}
           </Label>
           <Input
             id="confirm"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             className="mt-2"
-            placeholder="حذف"
+            placeholder={t("حذف")}
           />
         </div>
         <Button
           variant="destructive"
           className="mt-4"
-          disabled={confirm.trim() !== "حذف" || deleting}
+          disabled={confirm.trim() !== t("حذف") || deleting}
           onClick={handleDelete}
         >
           {deleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-          حذف الحساب نهائياً
+          {t("حذف الحساب نهائياً")}
         </Button>
       </section>
 
       <p className="mt-6 text-xs text-muted-foreground">
-        اطّلع على{" "}
+        {t("اطّلع على")}{" "}
         <Link to="/privacy" className="underline">
-          سياسة الخصوصية
+          {t("سياسة الخصوصية")}
         </Link>
         .
       </p>
