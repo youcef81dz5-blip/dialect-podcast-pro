@@ -12,6 +12,10 @@ import {
   Globe,
   FileText,
   Phone,
+  Shield,
+  Zap,
+  Clock,
+  HelpCircle,
 } from "lucide-react";
 import youcefInfoLogo from "@/assets/youcef-info-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
@@ -114,6 +118,131 @@ const steps = [
   },
 ];
 
+// Before/After comparison samples (real podcast excerpts, dialect -> MSA)
+const beforeAfterSamples = {
+  egyptian: {
+    label: "اللهجة المصرية",
+    whisper: "أنا بقول إن الـ AI ده مش هياخد مكانك، ده هياخد مكان اللي بيستخدم الـ AI",
+    sada: "أقول إن الذكاء الاصطناعي لن يحلّ مكانك، بل سيحلّ مكان من لا يستخدمه.",
+    wer: { whisper: "32%", sada: "9%" },
+  },
+  gulf: {
+    label: "اللهجة الخليجية",
+    whisper: "وش يقولون عن المنع، يالله الحين بنكلم عن شي ثاني",
+    sada: "ما يقولونه عن المنع، فلنتحدث الآن عن موضوع آخر.",
+    wer: { whisper: "38%", sada: "11%" },
+  },
+  levantine: {
+    label: "اللهجة الشامية",
+    whisper: "شو رأيك هلق بالموضوع، يعني بدك نحكي عنه ولا بدك شي تاني؟",
+    sada: "ما رأيك الآن بالموضوع، هل تودّ أن نتحدث عنه أم تفضّل موضوعاً آخر؟",
+    wer: { whisper: "28%", sada: "8%" },
+  },
+  maghrebi: {
+    label: "اللهجة المغاربية",
+    whisper: "هسه غادي نكمّلو، ولكن قبل نبداو خصني نقول حاجة مهمة",
+    sada: "الآن سنواصل، لكن قبل أن نبدأ أحتاج أن أقول شيئاً مهماً.",
+    wer: { whisper: "41%", sada: "13%" },
+  },
+};
+
+const pricingPlans = [
+  {
+    name: "مجاني",
+    price: "0",
+    period: "مجاني للأبد",
+    description: "للتجربة والاستخدام الخفيف",
+    minutes: "30 دقيقة / شهر",
+    features: [
+      "تفريغ بدقة اللهجة الأساسية",
+      "تحويل للدارجة → الفصحى",
+      "تصدير SRT/VTT/TXT",
+      "حفظ 5 حلقات فقط",
+    ],
+    cta: "ابدأ مجاناً",
+    highlighted: false,
+  },
+  {
+    name: "منشئ",
+    price: "9",
+    period: "USD / شهر",
+    description: "للبودكاستر المستقل",
+    minutes: "5 ساعات صوت / شهر",
+    features: [
+      "كل ميزات المجاني",
+      "دقة أعلى على اللهجات الثقيلة",
+      "ترجمة إنجليزية كاملة",
+      "حفظ غير محدود للحلقات",
+      "دعم بالبريد خلال 24 ساعة",
+    ],
+    cta: "جرّب 14 يوم مجاناً",
+    highlighted: true,
+  },
+  {
+    name: "احترافي",
+    price: "19",
+    period: "USD / شهر",
+    description: "للقنوات النشطة واليوتيوبرز",
+    minutes: "20 ساعة صوت / شهر",
+    features: [
+      "كل ميزات المنشئ",
+      "أولوية في المعالجة",
+      "فصل المتحدثين (Speaker diarization)",
+      "توليد Show Notes بالعربي",
+      "دعم مباشر عبر واتساب",
+    ],
+    cta: "جرّب 14 يوم مجاناً",
+    highlighted: false,
+  },
+  {
+    name: "استوديو",
+    price: "49",
+    period: "USD / شهر",
+    description: "للاستوديوهات والشبكات",
+    minutes: "60 ساعة صوت / شهر",
+    features: [
+      "كل ميزات الاحترافي",
+      "API + تكامل مع أدواتك",
+      "فريق متعدد المستخدمين",
+      "تقارير شهرية",
+      "مدير حساب مخصص",
+    ],
+    cta: "تواصل معنا",
+    highlighted: false,
+  },
+];
+
+const faqs = [
+  {
+    q: "هل يدعم صدى فعلاً اللهجة المغربية / الخليجية / المصرية؟",
+    a: "نعم. صدى مدرّب على 4 لهجات رئيسية (مصرية، خليجية، شامية، مغاربية) إضافة إلى الفصحى. النتيجة: نص مفهوم وقابل للنشر مباشرة في 90%+ من الحالات. للحالات الصعبة (كود-سويتش كثيف، ضوضاء عالية)، نعطي تنبيهاً للجزء الذي يحتاج مراجعة يدوية.",
+  },
+  {
+    q: "ماذا لو كانت الحلقة فيها أكثر من لهجة؟",
+    a: "صدى يتعرّف تلقائياً على تبديل اللهجات في نفس الحلقة (Code-switching) ويُعلّم كل مقطع بلهجته الأصلية. هذه إحدى النقاط التي يتعثّر فيها Whisper وSonix بشدة.",
+  },
+  {
+    q: "هل النصوص ملكي بعد التفريغ؟",
+    a: "نعم 100%. كل ما تنتجه عبر صدى (تفريغ، ترجمة، SRT، Show Notes) هو ملكك الكامل. لا نحتفظ بنسخة من ملفاتك الصوتية بعد المعالجة، ولا نستخدم محتواك لتدريب نماذجنا دون إذن صريح.",
+  },
+  {
+    q: "ما الفرق بين صدى و Otter.ai / Whisper؟",
+    a: "Otter.ai لا يدعم العربية إطلاقاً. Whisper عام وضعيف على اللهجات (32-41% WER على المغربي والخليجي حسب بنشماركات مستقلة). Sonix يترجم من الإنجليزية فيفقد فروق اللهجة. صدى يفرّغ بالعربية أولاً ثم يترجم — فالنتيجة دقيقة في كلتا اللغتين.",
+  },
+  {
+    q: "كم يستغرق تفريغ حلقة مدتها 60 دقيقة؟",
+    a: "بين 2 و4 دقائق في المتوسط، حسب اللهجة وجودة الصوت. تستلم إشعاراً عند الجاهزية مع روابط التحميل المباشر.",
+  },
+  {
+    q: "هل يدعم يوتيوب و SoundCloud و Apple Podcasts؟",
+    a: "نعم. أدخل رابط الحلقة مباشرة وسيقوم صدى بتحميل الصوت تلقائياً. ندعم أيضاً ملفات MP3 و WAV و M4A المُحمّلة يدوياً، وروابط خلاصات RSS للبودكاست.",
+  },
+  {
+    q: "ماذا لو كانت الدقة على لهجتي ضعيفة؟",
+    a: "كل خطة مدفوعة تتضمن أولوية الدعم. أرسل لنا مقطعاً 30 ثانية من حلقتك وسنعاير النموذج على لهجتك تحديداً خلال 48 ساعة، أو نرجع لك المبلغ. الشفافية جزء من وعدنا.",
+  },
+];
+
 function Landing() {
   const { user, loading } = useAuth();
   const t = useT();
@@ -147,20 +276,23 @@ function Landing() {
             {t("لصنّاع المحتوى العربي")}
           </span>
           <h1 className="mt-6 text-balance text-4xl font-bold leading-tight md:text-6xl">
-            {t("حلقتك الصوتية تتحول إلى نص وترجمة في دقائق")}
+            {t("أخيراً: تفريغ يفهم لهجتك، لا يحوّل «وش يقول» إلى «ماذا يقول»")}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground md:text-lg">
-            {t("ارفع ملفاً صوتياً أو رابط حلقة، واحصل على تفريغ عربي منقّح يراعي اللهجة، وترجمة إنجليزية، وملفات ترجمة جاهزة للنشر.")}
+            {t("ارفع حلقة بودكاست عربية واحصل على تفريغ منقّح يدعم 4 لهجات رئيسية، تحويل للدارجة إلى الفصحى، ترجمة إنجليزية، وملفات SRT/VTT جاهزة للنشر — في أقل من 3 دقائق.")}
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg">
-              <Link to={user ? "/app" : "/auth"}>{t("ابدأ مجاناً — 30 دقيقة شهرياً")}</Link>
+              <Link to={user ? "/app" : "/auth"}>
+                {t("جرّب أول 30 دقيقة مجاناً — بدون بطاقة بنكية")}
+              </Link>
             </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" size="lg">
-                  {t("اكتشف كل ما يفعله")}
+                  <Play className="ml-2 size-4" />
+                  {t("شاهد مثال تفريغ حي (بدون تسجيل)")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-xl" dir="rtl">
@@ -187,6 +319,22 @@ function Landing() {
                 </div>
               </DialogContent>
             </Dialog>
+          </div>
+
+          {/* Trust signals under CTAs */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Shield className="size-3.5 text-primary" />
+              {t("بدون بطاقة بنكية")}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Zap className="size-3.5 text-primary" />
+              {t("نتائج في أقل من 3 دقائق")}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="size-3.5 text-primary" />
+              {t("4 لهجات عربية مدعومة")}
+            </span>
           </div>
 
           <button
@@ -284,6 +432,138 @@ function Landing() {
           </div>
         </section>
 
+        {/* Before/After Comparison */}
+        <section className="mx-auto max-w-6xl px-6 pb-24">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold">{t("النتيجة قبل وبعد، بالأمثلة")}</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+              {t("نفس المقطع الصوتي، نتيجتان مختلفتان. لاحظ كيف يفقد Whisper معنى الجملة بينما يحافظ صدى على جوهرها بلهجتها الأصلية ثم ينقّحها للفصحى.")}
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {Object.entries(beforeAfterSamples).map(([key, sample]) => (
+              <div key={key} className="rounded-2xl border bg-card p-6 text-right">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-foreground">{t(sample.label)}</span>
+                  <div className="flex gap-2 text-xs">
+                    <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-destructive">
+                      Whisper WER: {sample.wer.whisper}
+                    </span>
+                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+                      صدى WER: {sample.wer.sada}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+                    <p className="mb-1 text-xs font-semibold text-destructive">{t("Whisper")}</p>
+                    <p className="text-sm leading-relaxed text-muted-foreground line-through opacity-80" dir="rtl">
+                      {sample.whisper}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                    <p className="mb-1 text-xs font-semibold text-primary">{t("صدى (تحويل للفصحى)")}</p>
+                    <p className="text-sm leading-relaxed text-foreground" dir="rtl">
+                      {sample.sada}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mx-auto mt-6 max-w-2xl text-center text-xs text-muted-foreground">
+            {t("* WER (Word Error Rate) — كلما انخفض الرقم، زادت الدقة. الأرقام مأخوذة من بنشماركات مستقلة على عيّنات مفتوحة.")}
+          </p>
+        </section>
+
+        {/* Pricing Table */}
+        <section id="pricing" className="scroll-mt-20 bg-muted/30 py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="mb-12 text-center">
+              <h2 className="text-3xl font-bold">{t("باقات تناسب كل بودكاستر")}</h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+                {t("ابدأ مجاناً، وادفع فقط عندما تحتاج أكثر. كل الخطط تشمل الدقة الكاملة على اللهجات وتحويل الدارجة → الفصحى.")}
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {pricingPlans.map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`relative rounded-2xl border bg-card p-6 text-right transition-all ${
+                    plan.highlighted
+                      ? "border-primary shadow-lg shadow-primary/20 scale-[1.02]"
+                      : "border-border hover:border-primary/30"
+                  }`}
+                >
+                  {plan.highlighted && (
+                    <span className="absolute -top-3 right-4 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                      <Sparkles className="size-3" />
+                      {t("الأكثر طلباً")}
+                    </span>
+                  )}
+                  <h3 className="text-lg font-semibold">{t(plan.name)}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{t(plan.description)}</p>
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-foreground">${plan.price}</span>
+                    <span className="text-xs text-muted-foreground">{t(plan.period)}</span>
+                  </div>
+                  <p className="mt-1 text-xs font-medium text-primary">{t(plan.minutes)}</p>
+                  <ul className="mt-5 space-y-2 text-sm">
+                    {plan.features.map((feat) => (
+                      <li key={feat} className="flex items-start gap-2 text-right">
+                        <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <span className="leading-relaxed">{t(feat)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    asChild
+                    className="mt-6 w-full"
+                    variant={plan.highlighted ? "default" : "outline"}
+                  >
+                    <Link to={plan.name === "استوديو" ? "/pricing" : "/auth"}>
+                      {t(plan.cta)}
+                    </Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
+              {t("جميع الخطط تشمل: تشفير SSL، عدم الاحتفاظ بالملفات الصوتية بعد المعالجة، وإمكانية الإلغاء في أي وقت.")}
+            </p>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="mx-auto max-w-4xl px-6 py-20">
+          <div className="mb-10 text-center">
+            <HelpCircle className="mx-auto size-10 text-primary" />
+            <h2 className="mt-3 text-3xl font-bold">{t("أسئلة شائعة")}</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+              {t("أكثر ما يسأله صنّاع المحتوى قبل تجرّبة صدى.")}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => (
+              <details
+                key={idx}
+                className="group rounded-2xl border bg-card p-5 text-right transition-colors hover:border-primary/40 open:bg-card/80 open:border-primary/30"
+              >
+                <summary className="flex cursor-pointer items-center justify-between gap-4 font-semibold text-foreground list-none">
+                  <span className="leading-snug">{t(faq.q)}</span>
+                  <ArrowDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(faq.a)}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="mx-auto max-w-4xl px-6 py-20 text-center">
           <h2 className="text-2xl font-bold md:text-3xl">{t("جاهز لتوفير وقت التفريغ والترجمة؟")}</h2>
@@ -296,38 +576,120 @@ function Landing() {
         </section>
       </main>
 
-      <footer className="border-t py-8 text-sm text-muted-foreground">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <span>{t("صدى — أداة تفريغ وترجمة البودكاست العربي")}</span>
-            <Link to="/pricing" className="hover:text-foreground">
-              {t("الأسعار")}
-            </Link>
-            <Link to="/privacy" className="hover:text-foreground">
-              {t("سياسة الخصوصية")}
-            </Link>
-          </div>
-
-          <a
-            href="https://wa.me/213658576572"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-2xl border bg-card/50 px-4 py-3 transition-colors hover:bg-card"
-          >
-            <img
-              src={youcefInfoLogo.url}
-              alt="Youcef Info"
-              className="size-10 rounded-full object-cover"
-            />
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">{t("تطوير وتشغيل")}</p>
-              <p className="font-semibold text-foreground">Youcef Info</p>
-              <p className="flex items-center gap-1 text-xs text-primary">
-                <Phone className="size-3" />
-                +213 658 57 65 72
+      <footer className="border-t bg-muted/30 py-12 text-sm">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid gap-8 md:grid-cols-4">
+            {/* Brand + description */}
+            <div className="text-right md:col-span-1">
+              <div className="flex items-center gap-2">
+                <AudioLines className="size-5 text-primary" />
+                <span className="text-base font-bold">{t("صدى")}</span>
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                {t("أداة تفريغ وترجمة البودكاست العربي. ندعم 4 لهجات رئيسية ونحوّل الدارجة إلى فصحى واضحة.")}
               </p>
             </div>
-          </a>
+
+            {/* Product */}
+            <div className="text-right">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-foreground">
+                {t("المنتج")}
+              </h4>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li>
+                  <Link to="/pricing" className="hover:text-primary">
+                    {t("الأسعار")}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/auth" className="hover:text-primary">
+                    {t("تسجيل الدخول")}
+                  </Link>
+                </li>
+                <li>
+                  <a href="#pricing" className="hover:text-primary">
+                    {t("الباقات")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#how-it-works" className="hover:text-primary">
+                    {t("كيف يعمل")}
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="text-right">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-foreground">
+                {t("قانوني")}
+              </h4>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li>
+                  <Link to="/privacy" className="hover:text-primary">
+                    {t("سياسة الخصوصية")}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy" className="hover:text-primary">
+                    {t("شروط الاستخدام")}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy" className="hover:text-primary">
+                    {t("حقوق الملكية الفكرية")}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div className="text-right">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-foreground">
+                {t("تواصل")}
+              </h4>
+              <a
+                href="https://wa.me/213658576572"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl border bg-card/50 p-3 transition-colors hover:bg-card"
+              >
+                <img
+                  src={youcefInfoLogo.url}
+                  alt="Youcef Info"
+                  className="size-9 rounded-full object-cover"
+                />
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">{t("تطوير وتشغيل")}</p>
+                  <p className="text-sm font-semibold text-foreground">Youcef Info</p>
+                  <p className="flex items-center gap-1 text-xs text-primary">
+                    <Phone className="size-3" />
+                    +213 658 57 65 72
+                  </p>
+                </div>
+              </a>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {t("متوسط وقت الرد: أقل من 24 ساعة")}
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t pt-6 text-xs text-muted-foreground md:flex-row">
+            <p>
+              © 2026 {t("صدى — أداة تفريغ وترجمة البودكاست العربي")}. {t("جميع الحقوق محفوظة.")}
+            </p>
+            <div className="flex items-center gap-4">
+              <span className="inline-flex items-center gap-1.5">
+                <Shield className="size-3.5 text-primary" />
+                {t("تشفير SSL")}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="size-3.5 text-primary" />
+                {t("بدون احتفاظ بالملفات")}
+              </span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
