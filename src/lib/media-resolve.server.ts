@@ -111,7 +111,7 @@ function parseRssFeed(xml: string): ResolvedMedia | null {
 async function resolveAppleUrl(rawUrl: string): Promise<ResolvedMedia> {
   const id = rawUrl.match(/id(\d+)/)?.[1];
   if (!id) throw new Error("تعذّر التعرف على البودكاست في رابط Apple Podcasts.");
-  const res = await fetch(`https://itunes.apple.com/lookup?id=${id}&entity=podcast`);
+  const res = await safeFetch(`https://itunes.apple.com/lookup?id=${id}&entity=podcast`);
   if (!res.ok) throw new Error("تعذّر الوصول إلى Apple Podcasts.");
   const json = (await res.json()) as { results?: Array<{ feedUrl?: string }> };
   const feedUrl = json.results?.[0]?.feedUrl;
@@ -121,7 +121,7 @@ async function resolveAppleUrl(rawUrl: string): Promise<ResolvedMedia> {
 }
 
 async function resolveFeedUrl(feedUrl: string): Promise<ResolvedMedia> {
-  const res = await fetch(feedUrl, { headers: { "User-Agent": "SadaBot/1.0" } });
+  const res = await safeFetch(feedUrl, { headers: { "User-Agent": "SadaBot/1.0" } });
   if (!res.ok) throw new Error("تعذّر تحميل خلاصة RSS.");
   const xml = await res.text();
   const parsed = parseRssFeed(xml);
@@ -137,7 +137,7 @@ async function resolveYoutube(videoId: string): Promise<ResolvedMedia> {
     );
   }
   const host = process.env['RAPIDAPI_YOUTUBE_HOST'] || "youtube-mp36.p.rapidapi.com";
-  const res = await fetch(`https://${host}/dl?id=${videoId}`, {
+  const res = await safeFetch(`https://${host}/dl?id=${videoId}`, {
     headers: { "x-rapidapi-key": key, "x-rapidapi-host": host },
   });
   if (!res.ok) {
@@ -197,7 +197,7 @@ export async function resolveMedia(rawUrl: string): Promise<ResolvedMedia> {
 
   // فحص نوع المحتوى: صوت مباشر أم خلاصة RSS
   try {
-    const head = await fetch(trimmed, { method: "HEAD", redirect: "follow" });
+    const head = await safeFetch(trimmed, { method: "HEAD" });
     const type = head.headers.get("content-type") ?? "";
     if (type.startsWith("audio/") || type === "application/octet-stream") {
       return { audioUrl: trimmed, title: null, durationSeconds: null, provider: "direct" };
