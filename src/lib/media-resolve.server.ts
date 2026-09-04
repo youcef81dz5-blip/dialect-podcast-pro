@@ -7,6 +7,47 @@ export type ResolvedMedia = {
 
 const AUDIO_EXT = /\.(mp3|m4a|mp4|wav|aac|ogg|opus|flac|webm)(\?|#|$)/i;
 
+// فحص المضيف ضد نطاقات الـIP الخاصة وعناوين الـmetadata لمنع SSRF.
+const PRIVATE_HOST_RE =
+  /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|0\.|::1$|\[?::1\]?$|fc[0-9a-f]{2}:|fe80:)/i;
+
+function isPrivateHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  if (host === "localhost" || host.endsWith(".localhost")) return true;
+  return PRIVATE_HOST_RE.test(host);
+}
+
+/**
+ * يجلب عنوان URL مع تعطيل إعادة التوجيه التلقائي والحد من القفزات.
+ * يتحقق من كل وجهة (بما فيها إعادة التوجيه) ضد نطاقات الـIP الخاصة.
+ */
+async function safeFetch(
+  url: string,
+  init: RequestInit = {},
+  maxRedirects = 3,
+): Promise<Response> {
+  let current = url;
+  for (let hop = 0; hop <= maxRedirects; hop++) {
+    const parsed = new URL(current);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      throw new Error("بروتوكول غير مسموح.");
+    }
+    if (isPrivateHost(parsed.hostname)) {
+      throw new Error("المضيف محظور لأسباب أمنية.");
+    }
+    const res = await fetch(current, { ...init, redirect: "manual" });
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get("location");
+      if (!location) throw new Error("إعادة توجيه بدون موقع.");
+      current = new URL(location, current).toString();
+      await res.arrayBuffer().catch(() => undefined);
+      continue;
+    }
+    return res;
+  }
+  throw new Error("تجاوز عدد مرات إعادة التوجيه المسموح.");
+}
+
 function decodeEntities(value: string): string {
   return value
     .replace(/&lt;/g, "<")
