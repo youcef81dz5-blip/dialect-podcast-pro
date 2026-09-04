@@ -30,3 +30,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (CRITICAL - secrets)
+.env
+.env.*
+!.env.example

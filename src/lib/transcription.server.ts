@@ -132,27 +132,23 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
     .eq("episode_id", episode.id)
     .eq("language", "ar")
     .maybeSingle();
-  let { data: subscription } = await supabaseAdmin
-    .from("subscriptions")
-    .select("id, minutes_quota, minutes_used, current_period_end")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (subscription && new Date(subscription.current_period_end).getTime() < Date.now()) {
-    const start = new Date();
-    const end = new Date(start);
-    end.setMonth(end.getMonth() + 1);
-    const { data: renewed } = await supabaseAdmin
-      .from("subscriptions")
-      .update({ minutes_used: 0, current_period_start: start.toISOString(), current_period_end: end.toISOString() })
-      .eq("id", subscription.id)
-      .select("id, minutes_quota, minutes_used, current_period_end")
-      .single();
-    if (renewed) subscription = renewed;
-  }
-  const minutesLeft = subscription ? subscription.minutes_quota - Number(subscription.minutes_used ?? 0) : 0;
-  if (!existingTranscript && minutesLeft <= 0) throw new Error("انتهى رصيد الدقائق في خطتك الحالية. رقِّ خطتك للمتابعة.");
-  if (!existingTranscript && episode.duration_seconds && episode.duration_seconds / 60 > minutesLeft) {
-    throw new Error("مدة الحلقة تتجاوز رصيد الدقائق المتبقي.");
+  if (!existingTranscript) {
+    // فحص الحصة الذرّي عبر دالة claim_quota_minutes لمنع race conditions.
+    // الدالة تستخدم SELECT ... FOR UPDATE وتجدد الفترة تلقائياً.
+    const durationMin = (episode.duration_seconds ?? 0) / 60;
+    const { data: claim, error: claimError } = await (supabaseAdmin.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>)("claim_quota_minutes", {
+      p_user_id: userId,
+      p_minutes: durationMin,
+    });
+    if (claimError) throw new Error(claimError.message);
+    const rows = claim as Array<{ granted: boolean; remaining_minutes: number }> | null;
+    const granted = Array.isArray(rows) ? rows[0]?.granted === true : false;
+    if (!granted) {
+      throw new Error("انتهى رصيد الدقائق الشهري. رقِّ خطتك للمتابعة.");
+    }
   }
 
   await supabaseAdmin.from("episodes").update({ status: "processing", error_message: null }).eq("id", episode.id);
@@ -224,12 +220,7 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
       throw new Error(segmentsError.message);
     }
     await supabaseAdmin.from("episodes").update({ status: "ready", error_message: null }).eq("id", episode.id);
-    if (subscription && !existingTranscript) {
-      await supabaseAdmin
-        .from("subscriptions")
-        .update({ minutes_used: Number(subscription.minutes_used ?? 0) + durationMs / 60000 })
-        .eq("id", subscription.id);
-    }
+    // لا حاجة لتحديث minutes_used يدوياً: دالة claim_quota_minutes خصمت الحصة ذرّياً قبل البدء.
     return { ok: true as const, segments: segments.length };
   } catch (error) {
     const message = error instanceof Error ? error.message : "فشل التفريغ.";
