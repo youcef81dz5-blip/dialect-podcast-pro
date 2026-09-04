@@ -136,7 +136,10 @@ export async function runTranscription(episodeId: string, context: AuthContext) 
     // فحص الحصة الذرّي عبر دالة claim_quota_minutes لمنع race conditions.
     // الدالة تستخدم SELECT ... FOR UPDATE وتجدد الفترة تلقائياً.
     const durationMin = (episode.duration_seconds ?? 0) / 60;
-    const { data: claim, error: claimError } = await supabaseAdmin.rpc("claim_quota_minutes" as never, {
+    const { data: claim, error: claimError } = await (supabaseAdmin.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>)("claim_quota_minutes", {
       p_user_id: userId,
       p_minutes: durationMin,
     });
