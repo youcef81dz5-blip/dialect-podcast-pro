@@ -338,7 +338,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_quota_minutes: {
+        Args: { p_minutes: number; p_user_id: string }
+        Returns: {
+          granted: boolean
+          remaining_minutes: number
+        }[]
+      }
     }
     Enums: {
       episode_dialect: "msa" | "gulf" | "egyptian" | "levantine" | "maghrebi"
