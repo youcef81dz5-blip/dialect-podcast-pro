@@ -19,6 +19,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "سجّل الدخول أو أنشئ حساباً لبدء تفريغ وترجمة حلقاتك." },
       { property: "og:title", content: "تسجيل الدخول — صدى" },
       { property: "og:description", content: "ادخل إلى لوحة تفريغ وترجمة البودكاست العربي." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
