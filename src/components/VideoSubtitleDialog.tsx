@@ -81,7 +81,7 @@ export function VideoSubtitleDialog({ title, versions }: { title: string; versio
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2"><Label htmlFor="video-language">{t("لغة الترجمة")}</Label>
-          <Select value={selected?.value} disabled={busy} onValueChange={(value) => { setVersion(value); clearResult(); }}><SelectTrigger id="video-language"><SelectValue /></SelectTrigger><SelectContent>{versions.map((item) => <SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>)}</SelectContent></Select>
+          <Select value={selected?.value ?? "ar"} disabled={busy} onValueChange={(value) => { setVersion(value); clearResult(); }}><SelectTrigger id="video-language"><SelectValue /></SelectTrigger><SelectContent>{versions.map((item) => <SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>)}</SelectContent></Select>
         </div>
         <div className="space-y-2"><Label htmlFor="video-mode">{t("نوع الدمج")}</Label>
           <Select value={mode} disabled={busy} onValueChange={(value) => { setMode(value); clearResult(); }}><SelectTrigger id="video-mode"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="lossless">{t("الجودة الأصلية — MKV")}</SelectItem><SelectItem value="burn">{t("كتابة ثابتة — MP4")}</SelectItem></SelectContent></Select>
