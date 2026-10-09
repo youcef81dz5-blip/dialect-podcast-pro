@@ -10,6 +10,7 @@ import { downloadText, safeFileName, toSrt, toTxt, toVtt, type SubtitleCue } fro
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 import { Textarea } from "@/components/ui/textarea";
+import { VideoSubtitleDialog } from "@/components/VideoSubtitleDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -230,6 +231,14 @@ function EpisodeTranscript() {
             )}
 
 
+            <VideoSubtitleDialog title={episode?.title ?? "episode"} versions={[
+              { value: "ar", label: "العربية", cues, language: "ara" },
+              ...(hasMsa ? [{ value: "msa", label: "الفصحى", cues: msaCues, language: "ara" }] : []),
+              ...(hasTranslation ? [
+                { value: "en", label: "الإنجليزية", cues: englishCues, language: "eng" },
+                { value: "both", label: "ثنائي اللغة", cues: cues.map((cue) => ({ ...cue, text: cue.translation ? `${cue.text}\n${cue.translation}` : cue.text })), language: "ara" },
+              ] : []),
+            ]} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
