@@ -11,6 +11,26 @@ export const LANGUAGES: { code: Lang; label: string; dir: "rtl" | "ltr" }[] = [
 type Entry = { en: string; fr: string };
 
 export const dictionary: Record<string, Entry> = {
+  "دمج الفيديو مع الترجمة": { en: "Merge video with subtitles", fr: "Fusionner vidéo et sous-titres" },
+  "اختر الفيديو الأصلي المطابق لهذه الحلقة. تبقى أبعاد الفيديو الأصلية دون تصغير.": { en: "Select the original video matching this episode. Its original dimensions are preserved.", fr: "Choisissez la vidéo originale correspondant à cet épisode. Ses dimensions originales sont conservées." },
+  "الفيديو الأصلي — حتى 200 ميجابايت": { en: "Original video — up to 200 MB", fr: "Vidéo originale — jusqu’à 200 Mo" },
+  "لغة الترجمة": { en: "Subtitle language", fr: "Langue des sous-titres" },
+  "نوع الدمج": { en: "Export mode", fr: "Mode d’export" },
+  "الجودة الأصلية — MKV": { en: "Original quality — MKV", fr: "Qualité originale — MKV" },
+  "كتابة ثابتة — MP4": { en: "Burned-in captions — MP4", fr: "Sous-titres incrustés — MP4" },
+  "ترجمة قابلة للتشغيل والإيقاف؛ الصورة والصوت دون إعادة ترميز. يُفتح في مشغّل يدعم MKV مثل VLC.": { en: "Switchable subtitles; video and audio are copied without re-encoding. Open with an MKV-compatible player such as VLC.", fr: "Sous-titres activables ; image et son copiés sans réencodage. À ouvrir avec un lecteur compatible MKV comme VLC." },
+  "ترجمة ظاهرة دائماً للنشر، بنفس الأبعاد وبجودة عالية؛ يتطلب إعادة ترميز وقد يستغرق وقتاً طويلاً.": { en: "Always-visible captions for publishing, at the same dimensions and high quality. Requires re-encoding and may take a long time.", fr: "Sous-titres toujours visibles pour publication, aux mêmes dimensions et en haute qualité. Nécessite un réencodage qui peut être long." },
+  "الأبعاد الأصلية": { en: "Original dimensions", fr: "Dimensions originales" },
+  "جارٍ تجهيز معالجة الفيديو…": { en: "Preparing video processing…", fr: "Préparation du traitement vidéo…" },
+  "جارٍ دمج الترجمة…": { en: "Merging subtitles…", fr: "Fusion des sous-titres…" },
+  "الفيديو المترجم جاهز للتنزيل.": { en: "Your subtitled video is ready to download.", fr: "Votre vidéo sous-titrée est prête à télécharger." },
+  "تنزيل الفيديو المترجم": { en: "Download subtitled video", fr: "Télécharger la vidéo sous-titrée" },
+  "إنشاء الفيديو المترجم": { en: "Create subtitled video", fr: "Créer la vidéo sous-titrée" },
+  "إلغاء": { en: "Cancel", fr: "Annuler" },
+  "تعذّر تحميل الخط العربي.": { en: "Could not load the Arabic font.", fr: "Impossible de charger la police arabe." },
+  "تعذّر دمج هذا الفيديو. جرّب خيار الجودة الأصلية أو ملف MP4 آخر.": { en: "Could not merge this video. Try original quality or another MP4 file.", fr: "Impossible de fusionner cette vidéo. Essayez la qualité originale ou un autre fichier MP4." },
+  "تعذّر إنشاء الفيديو المترجم.": { en: "Could not create the subtitled video.", fr: "Impossible de créer la vidéo sous-titrée." },
+  "المعاينة غير متاحة لهذا التنسيق؛ يمكنك تجربة دمج الجودة الأصلية.": { en: "Preview is unavailable for this format; you can try original-quality export.", fr: "Aperçu indisponible pour ce format ; vous pouvez essayer l’export en qualité originale." },
   // Brand + nav
   "صدى": { en: "Sada", fr: "Sada" },
   "الأسعار": { en: "Pricing", fr: "Tarifs" },
